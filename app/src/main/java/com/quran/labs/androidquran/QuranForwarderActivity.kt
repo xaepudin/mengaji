@@ -13,7 +13,7 @@ class QuranForwarderActivity : Activity() {
     super.onCreate(savedInstanceState)
     (application as QuranApplication).applicationComponent.inject(this)
 
-    // handle urls of type quran://sura/ayah
+    // handle urls of type quran://sura/ayah/endAyah
     val intent = intent
     if (intent != null) {
       val data = intent.data
@@ -22,14 +22,17 @@ class QuranForwarderActivity : Activity() {
         val pieces = urlString.split("/".toRegex()).toTypedArray()
 
         var sura: Int? = null
-        var ayah = 1
+        var ayah: Int? = null
+        var endAyah: Int? = null
         for (s in pieces) {
           try {
             val i = s.toInt()
             if (sura == null) {
               sura = i
-            } else {
+            } else if (ayah == null) {
               ayah = i
+            } else {
+              endAyah = i
               break
             }
           } catch (nfe: NumberFormatException) {
@@ -38,6 +41,12 @@ class QuranForwarderActivity : Activity() {
         }
 
         if (sura != null) {
+          if (ayah == null) {
+            ayah = 1
+          }
+          if (endAyah == null) {
+            endAyah = ayah
+          }
           val page = quranInfo.getPageFromSuraAyah(sura, ayah)
           val showSuraIntent = QuranDataActivity.openPageIntent(
             context = this,

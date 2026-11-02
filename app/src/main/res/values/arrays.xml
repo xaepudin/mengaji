@@ -17,4 +17,51 @@
     <item>Dark</item>
     <item>Automatic</item>
   </array>
+
+  <string-array name="hafiz_mode_entries">
+    <item>@string/prefs_hafiz_mode_ayah</item>
+    <item>@string/prefs_hafiz_mode_page</item>
+  </string-array>
+
+  <string-array name="hafiz_mode_values" translatable="false">
+    <item>ayah</item>
+    <item>page</item>
+  </string-array>
+
+  <string-array name="hafiz_short_press_ayah_entries">
+    <item>@string/prefs_hafiz_action_reveal_ayah</item>
+    <item>@string/prefs_hafiz_action_word</item>
+  </string-array>
+
+  <string-array name="hafiz_short_press_page_entries">
+    <item>@string/prefs_hafiz_action_reveal_next_ayah</item>
+    <item>@string/prefs_hafiz_action_word</item>
+  </string-array>
+
+  <string-array name="hafiz_long_press_ayah_entries">
+    <item>@string/prefs_hafiz_action_reveal_ayah</item>
+    <item>@string/prefs_hafiz_action_word</item>
+    <item>@string/prefs_hafiz_action_word_continuous</item>
+  </string-array>
+
+  <string-array name="hafiz_long_press_page_entries">
+    <item>@string/prefs_hafiz_action_reveal_until_ayah</item>
+    <item>@string/prefs_hafiz_action_word_continuous</item>
+  </string-array>
+
+  <string-array name="hafiz_short_press_values" translatable="false">
+    <item>reveal</item>
+    <item>word</item>
+  </string-array>
+
+  <string-array name="hafiz_long_press_ayah_values" translatable="false">
+    <item>reveal</item>
+    <item>word</item>
+    <item>continuous</item>
+  </string-array>
+
+  <string-array name="hafiz_long_press_page_values" translatable="false">
+    <item>reveal</item>
+    <item>continuous</item>
+  </string-array>
 </resources>

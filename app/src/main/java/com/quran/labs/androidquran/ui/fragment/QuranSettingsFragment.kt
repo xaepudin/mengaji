@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.preference.CheckBoxPreference
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
@@ -19,6 +20,7 @@ import com.quran.labs.androidquran.QuranAdvancedPreferenceActivity
 import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.Constants
+import com.quran.labs.androidquran.data.HafizModeType
 import com.quran.labs.androidquran.pageselect.PageSelectActivity
 import com.quran.labs.androidquran.ui.TranslationManagerActivity
 import com.quran.labs.androidquran.util.OrientationLockUtils
@@ -97,6 +99,76 @@ class QuranSettingsFragment : PreferenceFragmentCompat() {
     if (pageTypes.size < 2 && pageChangePref != null) {
       val readingPrefs: Preference? = findPreference(Constants.PREF_READING_CATEGORY)
       (readingPrefs as PreferenceGroup).removePreference(pageChangePref)
+    }
+
+    val modePreference = findPreference<ListPreference>(Constants.PREF_HAFIZ_MODE_TYPE)
+    val shortPressPreference =
+      findPreference<ListPreference>(Constants.PREF_HAFIZ_SHORT_PRESS_STYLE)
+    val longPressPreference =
+      findPreference<ListPreference>(Constants.PREF_HAFIZ_LONG_PRESS_STYLE)
+    val swipePreference =
+      findPreference<CheckBoxPreference>(Constants.PREF_HAFIZ_SWIPE_ENABLED)
+    modePreference?.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
+
+    fun updateActionSummary(preference: ListPreference?, value: CharSequence?) {
+      if (preference == null) return
+      val index = preference.entryValues.indexOfFirst { it.toString() == value?.toString() }
+      preference.summary = preference.entries.getOrNull(index)
+    }
+
+    fun updateHafizActionOptions(mode: String?) {
+      val perPage = HafizModeType.fromKey(mode) == HafizModeType.PAGE
+      shortPressPreference?.setEntries(
+        if (perPage) {
+          R.array.hafiz_short_press_page_entries
+        } else {
+          R.array.hafiz_short_press_ayah_entries
+        }
+      )
+      longPressPreference?.setEntries(
+        if (perPage) {
+          R.array.hafiz_long_press_page_entries
+        } else {
+          R.array.hafiz_long_press_ayah_entries
+        }
+      )
+      longPressPreference?.setEntryValues(
+        if (perPage) {
+          R.array.hafiz_long_press_page_values
+        } else {
+          R.array.hafiz_long_press_ayah_values
+        }
+      )
+      val longPressValues = resources.getStringArray(
+        if (perPage) {
+          R.array.hafiz_long_press_page_values
+        } else {
+          R.array.hafiz_long_press_ayah_values
+        }
+      )
+      val currentLongPressValue = longPressPreference?.value
+      if (currentLongPressValue != null && currentLongPressValue !in longPressValues) {
+        longPressPreference.value = longPressValues.first()
+      }
+      updateActionSummary(shortPressPreference, shortPressPreference?.value)
+      updateActionSummary(longPressPreference, longPressPreference?.value)
+      // swiping only makes sense when revealing from the start of the page
+      swipePreference?.isEnabled = perPage
+    }
+
+    shortPressPreference?.setOnPreferenceChangeListener { preference, newValue ->
+      updateActionSummary(preference as ListPreference, newValue as? CharSequence)
+      true
+    }
+    longPressPreference?.setOnPreferenceChangeListener { preference, newValue ->
+      updateActionSummary(preference as ListPreference, newValue as? CharSequence)
+      true
+    }
+
+    updateHafizActionOptions(modePreference?.value)
+    modePreference?.setOnPreferenceChangeListener { _, newValue ->
+      updateHafizActionOptions(newValue as? String)
+      true
     }
 
     // add additional injected preferences (if any)

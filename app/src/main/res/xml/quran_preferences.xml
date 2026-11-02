@@ -106,6 +106,65 @@
   </PreferenceCategory>
 
   <PreferenceCategory
+      android:key="@string/prefs_category_hafiz_mode"
+      android:title="@string/prefs_category_hafiz_mode"
+      app:iconSpaceReserved="false">
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/prefs_hafiz_mode"
+        android:persistent="true"
+        android:summary="@string/prefs_hafiz_mode_summary"
+        android:title="@string/prefs_hafiz_mode_title"
+        app:iconSpaceReserved="false"/>
+
+    <ListPreference
+        android:defaultValue="page"
+        android:dependency="@string/prefs_hafiz_mode"
+        android:entries="@array/hafiz_mode_entries"
+        android:entryValues="@array/hafiz_mode_values"
+        android:key="@string/prefs_hafiz_mode_type"
+        android:title="@string/prefs_hafiz_mode_type_title"
+        app:iconSpaceReserved="false"/>
+
+    <ListPreference
+        android:defaultValue="reveal"
+        android:dependency="@string/prefs_hafiz_mode"
+        android:entries="@array/hafiz_short_press_ayah_entries"
+        android:entryValues="@array/hafiz_short_press_values"
+        android:key="@string/prefs_hafiz_short_press_style"
+        android:title="@string/prefs_hafiz_short_press_title"
+        app:iconSpaceReserved="false"/>
+
+    <ListPreference
+        android:defaultValue="reveal"
+        android:dependency="@string/prefs_hafiz_mode"
+        android:entries="@array/hafiz_long_press_ayah_entries"
+        android:entryValues="@array/hafiz_long_press_ayah_values"
+        android:key="@string/prefs_hafiz_long_press_style"
+        android:title="@string/prefs_hafiz_long_press_title"
+        app:iconSpaceReserved="false"/>
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:dependency="@string/prefs_hafiz_mode"
+        android:key="@string/prefs_hafiz_swipe_enabled"
+        android:persistent="true"
+        android:summary="@string/prefs_hafiz_swipe_enabled_summary"
+        android:title="@string/prefs_hafiz_swipe_enabled_title"
+        app:iconSpaceReserved="false"/>
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:dependency="@string/prefs_hafiz_mode"
+        android:key="@string/prefs_hafiz_show_ayah_numbers"
+        android:persistent="true"
+        android:summary="@string/prefs_hafiz_show_ayah_numbers_summary"
+        android:title="@string/prefs_hafiz_show_ayah_numbers_title"
+        app:iconSpaceReserved="false"/>
+  </PreferenceCategory>
+
+  <PreferenceCategory
       android:key="@string/prefs_category_dual_screen_key"
       android:title="@string/prefs_category_dual_screen"
       app:iconSpaceReserved="false">

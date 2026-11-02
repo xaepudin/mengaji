@@ -8,6 +8,8 @@ import com.quran.data.model.highlight.HighlightInfo
 import com.quran.data.model.highlight.HighlightType
 import com.quran.data.model.selection.SelectionIndicator
 import com.quran.labs.androidquran.common.QuranAyahInfo
+import com.quran.labs.androidquran.data.HafizRevealStyle
+import com.quran.labs.androidquran.data.HafizPageAction
 import com.quran.mobile.translation.model.LocalTranslation
 import com.quran.page.common.data.AyahCoordinates
 import com.quran.page.common.data.PageCoordinates
@@ -65,6 +67,43 @@ open class AyahTrackerItem internal constructor(val page: Int) {
   open fun getAyahForPosition(page: Int, x: Float, y: Float): SuraAyah? = null
 
   open fun getGlyphForPosition(page: Int, x: Float, y: Float): AyahGlyph? = null
+
+  /** True if the given screen position is over this page's ayahs. */
+  open fun isPointOnPage(page: Int, x: Float, y: Float): Boolean = false
+
+  /** Reveals the ayah at the given screen position if hafiz mode is covering it. */
+  open fun revealHafizAyah(page: Int, x: Float, y: Float) {}
+
+  /**
+   * Applies the configured short press action to a covered ayah.
+   * @return true if the action was handled.
+   */
+  open fun revealHafizAyahOnTap(
+    page: Int,
+    sura: Int,
+    ayah: Int,
+    style: HafizRevealStyle
+  ): Boolean = false
+
+  /**
+   * Applies the configured long press action to a covered ayah.
+   * @return true if the action was handled.
+   */
+  open fun revealHafizAyahOnLongPress(
+    page: Int,
+    sura: Int,
+    ayah: Int,
+    style: HafizRevealStyle
+  ): Boolean = false
+
+  /** Reveals the next ayah of the page (per page mode). */
+  open fun revealNextHafizPageAyah(page: Int): Boolean = false
+
+  /** Hides the last revealed ayah of the page (per page mode). */
+  open fun hidePreviousHafizPageAyah(page: Int): Boolean = false
+
+  /** Applies a page level hafiz action (reveal all, hide all, first word only). */
+  open fun applyHafizPageAction(action: HafizPageAction): Boolean = false
 
   open fun getQuranAyahInfo(sura: Int, ayah: Int): QuranAyahInfo? = null
 

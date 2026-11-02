@@ -19,7 +19,11 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.FontMetrics;
 import android.graphics.RectF;
+import android.graphics.Region;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 
 import androidx.annotation.NonNull;
@@ -27,8 +31,10 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.DisplayCutoutCompat;
 
+import com.quran.data.model.SuraAyah;
 import com.quran.data.model.highlight.HighlightType;
 import com.quran.labs.androidquran.R;
+import com.quran.labs.androidquran.data.HafizRevealStyle;
 import com.quran.labs.androidquran.data.Constants;
 import com.quran.labs.androidquran.ui.helpers.AyahHighlight;
 import com.quran.labs.androidquran.ui.helpers.AyahHighlight.SingleAyahHighlight;
@@ -41,6 +47,7 @@ import com.quran.page.common.data.PageCoordinates;
 import com.quran.page.common.draw.ImageDrawHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +64,9 @@ public class HighlightingImageView extends AppCompatImageView {
   // when enabled, will draw bounds around each glyph to visualize the glyph bounds
   private static final boolean DEBUG_BOUNDS = false;
 
+  // delay between words while revealing word by word continuously
+  private static final long HAFIZ_CONTINUOUS_DELAY_MS = 300L;
+
   private static int overlayTextColor = -1;
   private static int headerFooterSize;
   private static int headerFooterFontSize;
@@ -67,6 +77,21 @@ public class HighlightingImageView extends AppCompatImageView {
 
   // Sorted map so we use highest priority highlighting when iterating
   private final SortedMap<HighlightType, Set<AyahHighlight>> currentHighlights = new TreeMap<>();
+
+  // Hafiz mode covers every ayah on the page until it is revealed
+  private boolean hafizModeEnabled = false;
+  private boolean hafizPerPage = false;
+  private boolean hafizShowAyahNumbers = true;
+  private boolean hafizModeApplied = false;
+  private int hafizFirstWordsCount = 0;
+  private final Set<String> hafizHiddenAyahs = new HashSet<>();
+  // per ayah reveal progress: key -> number of revealed words
+  private final Map<String, Integer> hafizRevealedWords = new HashMap<>();
+  // per page reveal progress, in words from the start of the page
+  private int hafizPageRevealedWords = 0;
+  private final RectF hafizCoverRect = new RectF();
+  private final Handler hafizHandler = new Handler(Looper.getMainLooper());
+  private Runnable hafizContinuousRunnable = null;
 
   private boolean isNightMode;
   private boolean isColorFilterOn;
@@ -180,6 +205,11 @@ public class HighlightingImageView extends AppCompatImageView {
   }
 
   public void highlightAyat(Set<String> ayahKeys, HighlightType type) {
+    if (shouldRevealForHighlight(type)) {
+      for (String ayahKey : ayahKeys) {
+        revealAyah(ayahKey);
+      }
+    }
     Set<AyahHighlight> highlights = currentHighlights.get(type);
     if (highlights == null) {
       highlights = new HashSet<>();
@@ -215,6 +245,555 @@ public class HighlightingImageView extends AppCompatImageView {
     for (Map.Entry<String, List<AyahBounds>> entry: ayahCoordinates.getAyahCoordinates().entrySet()) {
       highlightCoordinates.put(new SingleAyahHighlight(entry.getKey()), entry.getValue());
     }
+    if (hafizModeEnabled && !hafizModeApplied) {
+      // the coordinates arrived after hafiz mode was turned on, so apply it now
+      if (hafizFirstWordsCount > 0) {
+        applyHafizFirstWords();
+      } else {
+        hideAllAyahs();
+      }
+    }
+  }
+
+  public boolean isHafizModeEnabled() {
+    return hafizModeEnabled;
+  }
+
+  public void setHafizModeEnabled(
+      boolean enabled, boolean perPage, boolean showAyahNumbers, int firstWordsCount) {
+    final boolean optionsChanged = hafizPerPage != perPage
+        || hafizShowAyahNumbers != showAyahNumbers
+        || hafizFirstWordsCount != firstWordsCount;
+    if (hafizModeEnabled == enabled && !optionsChanged) {
+      return;
+    }
+
+    hafizModeEnabled = enabled;
+    hafizPerPage = perPage;
+    hafizShowAyahNumbers = showAyahNumbers;
+    hafizModeApplied = false;
+    hafizFirstWordsCount = 0;
+    hafizHiddenAyahs.clear();
+    hafizRevealedWords.clear();
+    hafizPageRevealedWords = 0;
+    stopHafizContinuousReveal();
+    if (enabled) {
+      if (firstWordsCount > 0) {
+        hafizFirstWordsCount = firstWordsCount;
+        applyHafizFirstWords();
+      } else {
+        hideAllAyahs();
+      }
+    }
+    invalidate();
+  }
+
+  public boolean isAyahHidden(int sura, int ayah) {
+    if (!hafizModeEnabled) {
+      return false;
+    }
+    if (hafizPerPage) {
+      return getHafizWordCount(sura, ayah) > 0 && getHafizRevealedWords(sura, ayah) <= 0;
+    }
+    return hafizHiddenAyahs.contains(ayahKey(sura, ayah));
+  }
+
+  /** Number of words in the ayah that are currently revealed while hafiz mode is on. */
+  public int getHafizRevealedWords(int sura, int ayah) {
+    final int totalWords = getHafizWordCount(sura, ayah);
+    // the first words baseline applies to every ayah on the page
+    final int baseline = Math.min(hafizFirstWordsCount, totalWords);
+    if (hafizPerPage) {
+      final int wordsBefore = getWordsBeforeAyah(sura, ayah);
+      if (wordsBefore < 0) {
+        return baseline;
+      }
+      final int revealedWords =
+          Math.max(0, Math.min(totalWords, hafizPageRevealedWords - wordsBefore));
+      return Math.max(baseline, revealedWords);
+    }
+    final Integer revealedWords = hafizRevealedWords.get(ayahKey(sura, ayah));
+    final int revealed = revealedWords == null ? 0 : revealedWords;
+    return Math.max(baseline, revealed);
+  }
+
+  /** True when only part of the ayah is revealed (hafiz mode progressive reveal). */
+  public boolean isAyahPartiallyRevealed(int sura, int ayah) {
+    final int revealedWords = getHafizRevealedWords(sura, ayah);
+    return hafizModeEnabled
+        && revealedWords > 0
+        && revealedWords < getHafizWordCount(sura, ayah);
+  }
+
+  /**
+   * Applies the configured short press action. In per page mode this reveals the next ayah or
+   * word, always starting from the beginning of the page.
+   */
+  public void revealHafizOnTap(int sura, int ayah, HafizRevealStyle style) {
+    if (!hafizModeEnabled) {
+      return;
+    }
+    clearHafizFirstWordsBaseline();
+    stopHafizContinuousReveal();
+    if (hafizPerPage) {
+      if (style == HafizRevealStyle.WORD_BY_WORD) {
+        revealNextHafizPageWord();
+      } else {
+        revealNextHafizPageAyah();
+      }
+    } else if (style == HafizRevealStyle.WORD_BY_WORD) {
+      revealNextHafizWord(sura, ayah);
+    } else {
+      toggleAyahVisibility(sura, ayah);
+    }
+  }
+
+  /**
+   * Applies the configured long press action. In per page mode this reveals everything from the
+   * beginning of the page up to the pressed ayah.
+   */
+  public void revealHafizOnLongPress(int sura, int ayah, HafizRevealStyle style) {
+    if (!hafizModeEnabled) {
+      return;
+    }
+    clearHafizFirstWordsBaseline();
+    stopHafizContinuousReveal();
+    if (style == HafizRevealStyle.WORD_BY_WORD_CONTINUOUS) {
+      startHafizContinuousReveal(sura, ayah);
+    } else if (hafizPerPage) {
+      revealHafizUpToAyah(sura, ayah);
+    } else if (style == HafizRevealStyle.WORD_BY_WORD) {
+      revealNextHafizWord(sura, ayah);
+    } else {
+      toggleAyahVisibility(sura, ayah);
+    }
+  }
+
+  /**
+   * Reveals word by word while the finger is held down. In per page mode the reveal runs from the
+   * beginning of the page up to the pressed ayah; in per ayah mode it reveals the pressed ayah.
+   */
+  public void startHafizContinuousReveal(int sura, int ayah) {
+    if (!hafizModeEnabled) {
+      return;
+    }
+    clearHafizFirstWordsBaseline();
+    stopHafizContinuousReveal();
+
+    final boolean perPage = hafizPerPage;
+    if (perPage) {
+      final int wordsBefore = getWordsBeforeAyah(sura, ayah);
+      final int totalWords = getHafizWordCount(sura, ayah);
+      if (wordsBefore < 0 || totalWords <= 0) {
+        return;
+      }
+    }
+
+    hafizContinuousRunnable = new Runnable() {
+      @Override
+      public void run() {
+        if (!hafizModeEnabled || hafizPerPage != perPage) {
+          hafizContinuousRunnable = null;
+          return;
+        }
+        boolean revealed = false;
+        if (perPage) {
+          final int totalWords = getHafizWordCount(sura, ayah);
+          if (totalWords > 0 && getHafizRevealedWords(sura, ayah) < totalWords) {
+            revealNextHafizPageWord();
+            revealed = true;
+          }
+        } else {
+          final int totalWords = getHafizWordCount(sura, ayah);
+          if (totalWords > 0 && getHafizRevealedWords(sura, ayah) < totalWords) {
+            revealNextHafizWord(sura, ayah);
+            revealed = true;
+          }
+        }
+        if (revealed) {
+          hafizHandler.postDelayed(this, HAFIZ_CONTINUOUS_DELAY_MS);
+        } else {
+          hafizContinuousRunnable = null;
+        }
+      }
+    };
+    hafizHandler.postDelayed(hafizContinuousRunnable, HAFIZ_CONTINUOUS_DELAY_MS);
+  }
+
+  /** Stops an ongoing continuous reveal (e.g. when the finger is lifted). */
+  public void stopHafizContinuousReveal() {
+    if (hafizContinuousRunnable != null) {
+      hafizHandler.removeCallbacks(hafizContinuousRunnable);
+      hafizContinuousRunnable = null;
+    }
+  }
+
+  /**
+   * Toggles the hafiz mode cover for an ayah. A covered or partially revealed ayah is fully
+   * revealed, and an already revealed ayah is covered again.
+   *
+   * @return true if the ayah's visibility changed
+   */
+  public boolean toggleAyahVisibility(int sura, int ayah) {
+    if (!hafizModeEnabled) {
+      return false;
+    }
+    clearHafizFirstWordsBaseline();
+
+    final String key = ayahKey(sura, ayah);
+    if (ayahCoordinates == null || !ayahCoordinates.getAyahCoordinates().containsKey(key)) {
+      return false;
+    }
+
+    if (hafizHiddenAyahs.contains(key) || hafizRevealedWords.containsKey(key)) {
+      uncoverAyah(key);
+    } else {
+      coverAyah(key);
+    }
+    return true;
+  }
+
+  public void revealAyah(int sura, int ayah) {
+    revealAyah(ayahKey(sura, ayah));
+  }
+
+  public void revealAyah(String ayahKey) {
+    if (!hafizModeEnabled) {
+      return;
+    }
+    clearHafizFirstWordsBaseline();
+    if (hafizPerPage) {
+      final SuraAyah ayah = parseAyahKey(ayahKey);
+      if (ayah != null) {
+        revealHafizUpToAyah(ayah.sura, ayah.ayah);
+      }
+      return;
+    }
+    hafizRevealedWords.remove(ayahKey);
+    if (hafizHiddenAyahs.remove(ayahKey)) {
+      invalidate();
+    }
+  }
+
+  /** Reveals one more word of the ayah (per ayah mode). */
+  public void revealNextHafizWord(int sura, int ayah) {
+    if (!hafizModeEnabled || hafizPerPage) {
+      return;
+    }
+    clearHafizFirstWordsBaseline();
+    final int totalWords = getHafizWordCount(sura, ayah);
+    if (totalWords <= 0) {
+      revealAyah(sura, ayah);
+      return;
+    }
+    if (!hafizHiddenAyahs.contains(ayahKey(sura, ayah))
+        && !hafizRevealedWords.containsKey(ayahKey(sura, ayah))) {
+      // already fully revealed
+      return;
+    }
+    setHafizRevealedWords(sura, ayah, getHafizRevealedWords(sura, ayah) + 1);
+  }
+
+  /** Reveals the next word of the page (per page mode). */
+  public void revealNextHafizPageWord() {
+    if (!hafizModeEnabled || !hafizPerPage) {
+      return;
+    }
+    for (SuraAyah ayah : pageAyahs()) {
+      final int totalWords = getHafizWordCount(ayah.sura, ayah.ayah);
+      if (totalWords <= 0) {
+        continue;
+      }
+      final int revealedWords = getHafizRevealedWords(ayah.sura, ayah.ayah);
+      if (revealedWords < totalWords) {
+        final int wordsBefore = getWordsBeforeAyah(ayah.sura, ayah.ayah);
+        hafizPageRevealedWords =
+            Math.max(hafizPageRevealedWords, wordsBefore + revealedWords + 1);
+        invalidate();
+        return;
+      }
+    }
+  }
+
+  /** Reveals the next ayah of the page (per page mode). */
+  public void revealNextHafizPageAyah() {
+    if (!hafizModeEnabled || !hafizPerPage) {
+      return;
+    }
+    clearHafizFirstWordsBaseline();
+    for (SuraAyah ayah : pageAyahs()) {
+      final int totalWords = getHafizWordCount(ayah.sura, ayah.ayah);
+      if (totalWords <= 0) {
+        continue;
+      }
+      final int wordsBefore = getWordsBeforeAyah(ayah.sura, ayah.ayah);
+      final int revealedWords =
+          Math.max(0, Math.min(totalWords, hafizPageRevealedWords - wordsBefore));
+      if (revealedWords < totalWords) {
+        hafizPageRevealedWords = wordsBefore + totalWords;
+        invalidate();
+        return;
+      }
+    }
+  }
+
+  /** Hides the last revealed ayah of the page (per page mode). */
+  public void hidePreviousHafizPageAyah() {
+    if (!hafizModeEnabled || !hafizPerPage) {
+      return;
+    }
+    clearHafizFirstWordsBaseline();
+    int wordsBefore = 0;
+    int targetStart = -1;
+    for (SuraAyah ayah : pageAyahs()) {
+      final int totalWords = getHafizWordCount(ayah.sura, ayah.ayah);
+      if (totalWords <= 0) {
+        continue;
+      }
+      final int revealedWords =
+          Math.max(0, Math.min(totalWords, hafizPageRevealedWords - wordsBefore));
+      if (revealedWords > 0) {
+        // this is the last ayah with at least one revealed word
+        targetStart = wordsBefore;
+      }
+      wordsBefore += totalWords;
+    }
+    if (targetStart >= 0) {
+      hafizPageRevealedWords = targetStart;
+      invalidate();
+    }
+  }
+
+  /** Reveals every ayah on the page (used by the hafiz mode toolbar menu). */
+  public void revealAllHafizAyahs() {
+    if (!hafizModeEnabled) {
+      return;
+    }
+    hafizFirstWordsCount = 0;
+    hafizHiddenAyahs.clear();
+    hafizRevealedWords.clear();
+    hafizPageRevealedWords = getTotalPageWords();
+    hafizModeApplied = true;
+    invalidate();
+  }
+
+  /** Covers every ayah on the page (used by the hafiz mode toolbar menu). */
+  public void hideAllHafizAyahs() {
+    if (!hafizModeEnabled) {
+      return;
+    }
+    hafizFirstWordsCount = 0;
+    hafizHiddenAyahs.clear();
+    hafizRevealedWords.clear();
+    hafizPageRevealedWords = 0;
+    if (!hafizPerPage && ayahCoordinates != null) {
+      hafizHiddenAyahs.addAll(ayahCoordinates.getAyahCoordinates().keySet());
+    }
+    hafizModeApplied = true;
+    invalidate();
+  }
+
+  /** Reveals only the first word of every ayah on the page. */
+  public void revealFirstWordOfEachAyah() {
+    if (!hafizModeEnabled) {
+      return;
+    }
+    hafizFirstWordsCount = 1;
+    applyHafizFirstWords();
+  }
+
+  private void applyHafizFirstWords() {
+    if (ayahCoordinates == null) {
+      // the coordinates are not ready yet, setAyahData will apply this state later
+      return;
+    }
+    hafizHiddenAyahs.clear();
+    hafizRevealedWords.clear();
+    hafizPageRevealedWords = 0;
+    hafizModeApplied = true;
+    invalidate();
+  }
+
+  private void clearHafizFirstWordsBaseline() {
+    if (hafizFirstWordsCount <= 0 || hafizPerPage) {
+      // in per page mode the first words of every ayah stay revealed while the page reveal
+      // continues, so the baseline is kept
+      return;
+    }
+    final int count = hafizFirstWordsCount;
+    hafizFirstWordsCount = 0;
+    if (ayahCoordinates != null) {
+      // keep the revealed first words of each ayah and continue from there
+      for (String key : ayahCoordinates.getAyahCoordinates().keySet()) {
+        final SuraAyah ayah = parseAyahKey(key);
+        if (ayah != null) {
+          final int totalWords = getHafizWordCount(ayah.sura, ayah.ayah);
+          if (totalWords > 0) {
+            hafizRevealedWords.put(key, Math.min(count, totalWords));
+          }
+        }
+      }
+    }
+  }
+
+  /** Reveals everything from the start of the page up to the given ayah (per page mode). */
+  public void revealHafizUpToAyah(int sura, int ayah) {
+    if (!hafizModeEnabled || !hafizPerPage) {
+      return;
+    }
+    clearHafizFirstWordsBaseline();
+    final int wordsBefore = getWordsBeforeAyah(sura, ayah);
+    final int totalWords = getHafizWordCount(sura, ayah);
+    if (wordsBefore < 0 || totalWords <= 0) {
+      return;
+    }
+    hafizPageRevealedWords = Math.max(hafizPageRevealedWords, wordsBefore + totalWords);
+    invalidate();
+  }
+
+  private void setHafizRevealedWords(int sura, int ayah, int revealedWords) {
+    final String key = ayahKey(sura, ayah);
+    final int totalWords = getHafizWordCount(sura, ayah);
+    if (totalWords <= 0) {
+      revealAyah(key);
+      return;
+    }
+
+    if (revealedWords <= 0) {
+      hafizRevealedWords.remove(key);
+      coverAyah(key);
+    } else if (revealedWords >= totalWords) {
+      uncoverAyah(key);
+    } else {
+      hafizHiddenAyahs.remove(key);
+      hafizRevealedWords.put(key, revealedWords);
+      invalidate();
+    }
+  }
+
+  private void coverAyah(String ayahKey) {
+    hafizHiddenAyahs.add(ayahKey);
+    hafizRevealedWords.remove(ayahKey);
+    invalidate();
+  }
+
+  private void uncoverAyah(String ayahKey) {
+    hafizHiddenAyahs.remove(ayahKey);
+    hafizRevealedWords.remove(ayahKey);
+    invalidate();
+  }
+
+  private int getHafizWordCount(int sura, int ayah) {
+    final AyahCoordinates coordinates = ayahCoordinates;
+    if (coordinates == null) {
+      return 0;
+    }
+    return HafizRevealBounds.INSTANCE.wordCount(
+        coordinates, new SuraAyah(sura, ayah), hafizShowAyahNumbers);
+  }
+
+  private int getTotalPageWords() {
+    int totalWords = 0;
+    for (SuraAyah ayah : pageAyahs()) {
+      totalWords += getHafizWordCount(ayah.sura, ayah.ayah);
+    }
+    return totalWords;
+  }
+
+  private int getWordsBeforeAyah(int sura, int ayah) {
+    int wordsBefore = 0;
+    for (SuraAyah pageAyah : pageAyahs()) {
+      if (pageAyah.sura == sura && pageAyah.ayah == ayah) {
+        return wordsBefore;
+      }
+      wordsBefore += getHafizWordCount(pageAyah.sura, pageAyah.ayah);
+    }
+    return -1;
+  }
+
+  private List<SuraAyah> pageAyahs() {
+    final AyahCoordinates coordinates = ayahCoordinates;
+    if (coordinates == null) {
+      return Collections.emptyList();
+    }
+    final List<SuraAyah> ayahs = new ArrayList<>();
+    for (String key : coordinates.getAyahCoordinates().keySet()) {
+      final SuraAyah ayah = parseAyahKey(key);
+      if (ayah != null) {
+        ayahs.add(ayah);
+      }
+    }
+    Collections.sort(ayahs);
+    return ayahs;
+  }
+
+  private static SuraAyah parseAyahKey(String ayahKey) {
+    final int separator = ayahKey.indexOf(':');
+    if (separator <= 0) {
+      return null;
+    }
+    try {
+      return new SuraAyah(
+          Integer.parseInt(ayahKey.substring(0, separator)),
+          Integer.parseInt(ayahKey.substring(separator + 1)));
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  private void hideAllAyahs() {
+    final AyahCoordinates coordinates = ayahCoordinates;
+    if (coordinates == null) {
+      return;
+    }
+
+    final Set<String> ayahKeys = coordinates.getAyahCoordinates().keySet();
+    if (ayahKeys.isEmpty()) {
+      return;
+    }
+
+    hafizRevealedWords.clear();
+    hafizPageRevealedWords = 0;
+    hafizHiddenAyahs.clear();
+    for (String ayahKey : ayahKeys) {
+      final boolean active = isActivelyHighlighted(ayahKey);
+      if (hafizPerPage) {
+        if (active) {
+          // keep the currently selected / playing ayah visible
+          revealAyah(ayahKey);
+        }
+      } else if (!active) {
+        hafizHiddenAyahs.add(ayahKey);
+      }
+    }
+    hafizModeApplied = true;
+    invalidate();
+  }
+
+  private boolean isActivelyHighlighted(String ayahKey) {
+    return containsHighlight(currentHighlights.get(HighlightTypes.SELECTION), ayahKey)
+        || containsHighlight(currentHighlights.get(HighlightTypes.AUDIO), ayahKey);
+  }
+
+  private static boolean containsHighlight(Set<AyahHighlight> highlights, String ayahKey) {
+    if (highlights == null) {
+      return false;
+    }
+    for (AyahHighlight highlight : highlights) {
+      if (ayahKey.equals(highlight.getKey())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean shouldRevealForHighlight(HighlightType type) {
+    return hafizModeEnabled
+        && (type == HighlightTypes.SELECTION || type == HighlightTypes.AUDIO);
+  }
+
+  private static String ayahKey(int sura, int ayah) {
+    return sura + ":" + ayah;
   }
 
   public void setNightMode(boolean isNightMode, int textBrightness, int backgroundBrightness) {
@@ -351,6 +930,9 @@ public class HighlightingImageView extends AppCompatImageView {
   }
 
   public void highlightAyah(int surah, int ayah, int word, HighlightType type) {
+    if (shouldRevealForHighlight(type)) {
+      revealAyah(surah, ayah);
+    }
     final Set<AyahHighlight> highlights = currentHighlights.get(type);
     final SingleAyahHighlight singleAyahHighlight = new SingleAyahHighlight(surah, ayah, word);
     if (highlights == null) {
@@ -544,6 +1126,11 @@ public class HighlightingImageView extends AppCompatImageView {
       clippingHighlightsDrawer.draw(pageCoordinates, canvas, this);
     }
 
+    // Clip out the parts of the page that are still covered by hafiz mode
+    if (hafizModeEnabled) {
+      drawHafizCovers(canvas);
+    }
+
     // Draw the page image (excluding clipped out sections)
     super.onDraw(canvas);
 
@@ -572,5 +1159,81 @@ public class HighlightingImageView extends AppCompatImageView {
     if (DEBUG_BOUNDS && pageCoordinates != null) {
       glyphBoundsDebuggingDrawer.draw(pageCoordinates, canvas, this);
     }
+  }
+
+  private void drawHafizCovers(Canvas canvas) {
+    final AyahCoordinates coordinates = ayahCoordinates;
+    if (coordinates == null) {
+      return;
+    }
+
+    if (hafizPerPage) {
+      for (SuraAyah ayah : pageAyahs()) {
+        final int totalWords = getHafizWordCount(ayah.sura, ayah.ayah);
+        if (totalWords <= 0) {
+          continue;
+        }
+        final int revealedWords = getHafizRevealedWords(ayah.sura, ayah.ayah);
+        if (revealedWords >= totalWords) {
+          continue;
+        }
+        clipHafizCover(canvas, coordinates, ayah, revealedWords);
+      }
+    } else {
+      for (String key : coordinates.getAyahCoordinates().keySet()) {
+        final SuraAyah ayah = parseAyahKey(key);
+        if (ayah == null) {
+          continue;
+        }
+        if (hafizHiddenAyahs.contains(key)) {
+          clipHafizCover(canvas, coordinates, ayah, 0);
+          continue;
+        }
+        final int totalWords = getHafizWordCount(ayah.sura, ayah.ayah);
+        if (hafizRevealedWords.containsKey(key)) {
+          final int revealedWords = hafizRevealedWords.get(key);
+          if (totalWords <= 0 || revealedWords < totalWords) {
+            clipHafizCover(canvas, coordinates, ayah, revealedWords);
+          }
+        } else if (hafizFirstWordsCount > 0 && totalWords > 0) {
+          // ayahs that are not tracked are fully revealed, but the first words baseline
+          // keeps their leading words covered
+          final int revealedWords = Math.min(hafizFirstWordsCount, totalWords);
+          if (revealedWords < totalWords) {
+            clipHafizCover(canvas, coordinates, ayah, revealedWords);
+          }
+        }
+      }
+    }
+  }
+
+  private void clipHafizCover(
+      Canvas canvas,
+      AyahCoordinates coordinates,
+      SuraAyah ayah,
+      int revealedWords
+  ) {
+    final List<RectF> coveredBounds = HafizRevealBounds.INSTANCE.coveredBounds(
+        coordinates, ayah, revealedWords, hafizShowAyahNumbers);
+    for (RectF bounds : coveredBounds) {
+      hafizCoverRect.set(bounds);
+      getImageMatrix().mapRect(hafizCoverRect);
+      hafizCoverRect.offset(getPaddingLeft(), getPaddingTop());
+      clipOutRect(canvas, hafizCoverRect);
+    }
+  }
+
+  private static void clipOutRect(Canvas canvas, RectF rect) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      canvas.clipOutRect(rect);
+    } else {
+      canvas.clipRect(rect, Region.Op.DIFFERENCE);
+    }
+  }
+
+  @Override
+  protected void onDetachedFromWindow() {
+    stopHafizContinuousReveal();
+    super.onDetachedFromWindow();
   }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/hafiz_reveal_all"
+          android:title="@string/menu_hafiz_reveal_all" />
+    <item android:id="@+id/hafiz_hide_all"
+          android:title="@string/menu_hafiz_hide_all" />
+    <item android:id="@+id/hafiz_reveal_first_word"
+          android:title="@string/menu_hafiz_reveal_first_word" />
+</menu>

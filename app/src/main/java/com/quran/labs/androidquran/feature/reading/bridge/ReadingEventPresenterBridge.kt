@@ -41,6 +41,15 @@ class ReadingEventPresenterBridge(
   }
 
   /**
+   * Set the highlighted sura and multiple ayah
+   */
+  fun setMultiAyahSelection(sura: Int, startAyah: Int, endAyah: Int, scrollToAyah: Boolean) {
+    val selectionIndicator = if (scrollToAyah) SelectionIndicator.ScrollOnly else SelectionIndicator.None
+    val ayahSelection = AyahSelection.AyahRange(SuraAyah(sura, startAyah), SuraAyah(sura, endAyah), selectionIndicator)
+    readingEventPresenter.onAyahSelection(ayahSelection)
+  }
+
+  /**
    * Clear the selected ayah
    */
   fun clearSelectedAyah() {

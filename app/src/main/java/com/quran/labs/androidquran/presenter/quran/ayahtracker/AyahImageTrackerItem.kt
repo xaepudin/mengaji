@@ -1,5 +1,6 @@
 package com.quran.labs.androidquran.presenter.quran.ayahtracker
 
+import android.graphics.RectF
 import android.view.View
 import com.quran.data.core.QuranInfo
 import com.quran.data.model.AyahGlyph
@@ -7,6 +8,8 @@ import com.quran.data.model.AyahWord
 import com.quran.data.model.SuraAyah
 import com.quran.data.model.highlight.HighlightType
 import com.quran.data.model.selection.SelectionIndicator
+import com.quran.labs.androidquran.data.HafizRevealStyle
+import com.quran.labs.androidquran.data.HafizPageAction
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.ui.helpers.QuranDisplayHelper
 import com.quran.labs.androidquran.ui.util.ImageAyahUtils
@@ -153,6 +156,82 @@ open class AyahImageTrackerItem @JvmOverloads constructor(
       // Return the glyph at that page x,y coordinates
       pageGlyphsCoords?.getGlyphAtPoint(pgX, pgY)
     } else null
+  }
+
+  override fun isPointOnPage(page: Int, x: Float, y: Float): Boolean {
+    if (this.page != page) return false
+    val (pgX, pgY) = ImageAyahUtils.getPageXY(x, y, ayahView) ?: return false
+    val bounds = pageGlyphsCoords?.pageBounds ?: getAyahBounds() ?: return false
+    return bounds.contains(pgX, pgY)
+  }
+
+  override fun revealHafizAyah(page: Int, x: Float, y: Float) {
+    if (this.page != page || !ayahView.isHafizModeEnabled) return
+    val ayah = getAyahAtPoint(page, x, y) ?: return
+    ayahView.revealAyah(ayah.sura, ayah.ayah)
+  }
+
+  override fun revealHafizAyahOnTap(
+    page: Int,
+    sura: Int,
+    ayah: Int,
+    style: HafizRevealStyle
+  ): Boolean {
+    if (this.page != page || !ayahView.isHafizModeEnabled) return false
+    ayahView.revealHafizOnTap(sura, ayah, style)
+    return true
+  }
+
+  override fun revealHafizAyahOnLongPress(
+    page: Int,
+    sura: Int,
+    ayah: Int,
+    style: HafizRevealStyle
+  ): Boolean {
+    if (this.page != page || !ayahView.isHafizModeEnabled) return false
+    ayahView.revealHafizOnLongPress(sura, ayah, style)
+    return true
+  }
+
+  override fun revealNextHafizPageAyah(page: Int): Boolean {
+    if (this.page != page || !ayahView.isHafizModeEnabled) return false
+    ayahView.revealNextHafizPageAyah()
+    return true
+  }
+
+  override fun hidePreviousHafizPageAyah(page: Int): Boolean {
+    if (this.page != page || !ayahView.isHafizModeEnabled) return false
+    ayahView.hidePreviousHafizPageAyah()
+    return true
+  }
+
+  override fun applyHafizPageAction(action: HafizPageAction): Boolean {
+    if (!ayahView.isHafizModeEnabled) return false
+    when (action) {
+      HafizPageAction.REVEAL_ALL -> ayahView.revealAllHafizAyahs()
+      HafizPageAction.HIDE_ALL -> ayahView.hideAllHafizAyahs()
+      HafizPageAction.REVEAL_FIRST_WORD -> ayahView.revealFirstWordOfEachAyah()
+    }
+    return true
+  }
+
+  private fun getAyahAtPoint(page: Int, x: Float, y: Float): SuraAyah? {
+    if (this.page != page) return null
+    val pageXY = ImageAyahUtils.getPageXY(x, y, ayahView)
+    if (pageXY != null) {
+      // glyph bounds match the covered area more closely than the ayah bounds
+      pageGlyphsCoords?.getGlyphAtPoint(pageXY[0], pageXY[1])?.let { return it.ayah }
+    }
+    return ImageAyahUtils.getAyahFromCoordinates(coordinates, ayahView, x, y)
+  }
+
+  private fun getAyahBounds(): RectF? {
+    val coordinates = coordinates ?: return null
+    val bounds = RectF()
+    coordinates.values.forEach { ayahBounds ->
+      ayahBounds.forEach { bounds.union(it.bounds) }
+    }
+    return bounds.takeIf { !it.isEmpty }
   }
 
   override fun getAyahView(): View {

@@ -7,12 +7,14 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
+import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.TypedValue
 import android.preference.PreferenceManager
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
@@ -23,15 +25,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.FrameLayout
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -74,6 +80,7 @@ import com.quran.labs.androidquran.common.audio.model.playback.AudioRequest
 import com.quran.labs.androidquran.common.audio.repository.AudioStatusRepository
 import com.quran.labs.androidquran.common.audio.repository.CurrentQariManager
 import com.quran.labs.androidquran.data.Constants
+import com.quran.labs.androidquran.data.HafizPageAction
 import com.quran.labs.androidquran.data.QuranDataProvider
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.di.component.activity.PagerActivityComponent
@@ -191,6 +198,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private var needsPermissionToDownloadOver3g = true
   private var promptDialog: AlertDialog? = null
   private var isDualPages = false
+  private var hafizActionView: ImageButton? = null
   private var promptedForExtraDownload = false
   private var isFoldableDeviceOpenAndVertical = false
 
@@ -206,7 +214,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private lateinit var audioStatusBar: AudioBarWrapper
   private lateinit var viewPager: ViewPager
   private val themePreferencesListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-    if (key in PAGE_COLOR_PREFERENCES) {
+    if (key in PAGE_COLOR_PREFERENCES || key == Constants.PREF_HAFIZ_MODE) {
       refreshQuranPages()
     }
   }
@@ -438,13 +446,23 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
           extras.getBoolean(EXTRA_JUMP_TO_TRANSLATION, showingTranslation)
         val highlightedSura = extras.getInt(EXTRA_HIGHLIGHT_SURA, -1)
         val highlightedAyah = extras.getInt(EXTRA_HIGHLIGHT_AYAH, -1)
+        val highlightedEndAyah = extras.getInt(EXTRA_HIGHLIGHT_END_AYAH, -1)
 
         if (highlightedSura > -1 && highlightedAyah > -1) {
-          readingEventPresenterBridge.setSelection(
-            highlightedSura,
-            highlightedAyah,
-            true
-          )
+          if (highlightedEndAyah > -1) {
+            readingEventPresenterBridge.setMultiAyahSelection(
+              highlightedSura,
+              highlightedAyah,
+              highlightedEndAyah,
+              true
+            )
+          } else {
+            readingEventPresenterBridge.setSelection(
+              highlightedSura,
+              highlightedAyah,
+              true
+            )
+          }
         }
       }
     }
@@ -1067,8 +1085,19 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       showingTranslation = extras.getBoolean(EXTRA_JUMP_TO_TRANSLATION, showingTranslation)
       val highlightedSura = extras.getInt(EXTRA_HIGHLIGHT_SURA, -1)
       val highlightedAyah = extras.getInt(EXTRA_HIGHLIGHT_AYAH, -1)
+      val highlightedEndAyah = extras.getInt(EXTRA_HIGHLIGHT_END_AYAH, -1)
+
       if (highlightedSura > 0 && highlightedAyah > 0) {
-        readingEventPresenterBridge.setSelection(highlightedSura, highlightedAyah, true)
+        if (highlightedEndAyah > 0) {
+          readingEventPresenterBridge.setMultiAyahSelection(
+            highlightedSura,
+            highlightedAyah,
+            highlightedEndAyah,
+            true
+          )
+        } else {
+          readingEventPresenterBridge.setSelection(highlightedSura, highlightedAyah, true)
+        }
       }
 
       if (showingTranslation != currentValue) {
@@ -1172,6 +1201,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     // due to inflation plus due to the search view specific setup work. we can
     // directly modify the bookmark item using a reference to this instead.
     bookmarksMenuItem = menu.findItem(R.id.favorite_item)
+    setupHafizActionView(menu)
     return true
   }
 
@@ -1193,6 +1223,13 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         translation.isVisible = false
       }
     }
+
+    val hafizMode = menu.findItem(R.id.hafiz_mode)
+    if (hafizMode != null) {
+      hafizMode.isVisible = !showingTranslation
+      hafizMode.isChecked = quranSettings.isHafizModeEnabled
+      updateHafizActionIcon()
+    }
     return true
   }
 
@@ -1209,6 +1246,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         quranEventLogger.switchToTranslationMode(translations!!.size)
         switchToTranslation()
       }
+      return true
+    } else if (itemId == R.id.hafiz_mode) {
+      toggleHafizMode()
       return true
     } else if (itemId == R.id.page_theme) {
       showPageThemeSheet()
@@ -1244,6 +1284,105 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         (f as QuranPage).updateView()
       }
     }
+  }
+
+  private fun setupHafizActionView(menu: Menu) {
+    val item = menu.findItem(R.id.hafiz_mode) ?: return
+    val actionView = hafizActionView ?: ImageButton(this).apply {
+      val size = (48 * resources.displayMetrics.density).toInt()
+      layoutParams = Toolbar.LayoutParams(size, size)
+      scaleType = ImageView.ScaleType.CENTER_INSIDE
+      setBackgroundResource(selectableItemBackground())
+      contentDescription = getString(R.string.menu_hafiz_mode)
+      imageTintList = ColorStateList.valueOf(
+        ContextCompat.getColor(this@PagerActivity, R.color.toolbar_icon_tint)
+      )
+      setOnClickListener { toggleHafizMode() }
+      setOnLongClickListener {
+        val firstWords = quranSettings.hafizFirstWordsCount
+        if (quranSettings.isHafizModeEnabled && firstWords > 0) {
+          // in first words mode a long press reveals the next word of every ayah
+          quranSettings.setHafizFirstWordsCount(firstWords + 1)
+          refreshQuranPages()
+        } else {
+          showHafizActionsPopup(this)
+        }
+        true
+      }
+    }.also { hafizActionView = it }
+    item.actionView = actionView
+    updateHafizActionIcon()
+  }
+
+  private fun updateHafizActionIcon() {
+    val icon = when {
+      !quranSettings.isHafizModeEnabled -> R.drawable.ic_hafiz_mode
+      quranSettings.hafizFirstWordsCount > 0 -> R.drawable.ic_hafiz_mode_first_word
+      else -> R.drawable.ic_hafiz_mode_on
+    }
+    hafizActionView?.setImageResource(icon)
+  }
+
+  private fun selectableItemBackground(): Int {
+    val outValue = TypedValue()
+    theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)
+    return outValue.resourceId
+  }
+
+  private fun toggleHafizMode() {
+    // three states: off -> all ayahs covered -> first word of each ayah -> off
+    val enabled = quranSettings.isHafizModeEnabled
+    val firstWords = quranSettings.hafizFirstWordsCount
+    when {
+      !enabled -> {
+        quranSettings.setHafizModeEnabled(true)
+        quranSettings.setHafizFirstWordsCount(0)
+      }
+      firstWords == 0 -> quranSettings.setHafizFirstWordsCount(1)
+      else -> {
+        quranSettings.setHafizModeEnabled(false)
+        quranSettings.setHafizFirstWordsCount(0)
+      }
+    }
+    updateHafizActionIcon()
+    refreshQuranPages()
+  }
+
+  private fun showHafizActionsPopup(anchor: View) {
+    val popup = PopupMenu(this, anchor)
+    popup.menuInflater.inflate(R.menu.hafiz_actions_menu, popup.menu)
+    popup.setOnMenuItemClickListener { item ->
+      val action = when (item.itemId) {
+        R.id.hafiz_reveal_all -> HafizPageAction.REVEAL_ALL
+        R.id.hafiz_hide_all -> HafizPageAction.HIDE_ALL
+        R.id.hafiz_reveal_first_word -> HafizPageAction.REVEAL_FIRST_WORD
+        else -> return@setOnMenuItemClickListener false
+      }
+      applyHafizPageAction(action)
+      true
+    }
+    popup.show()
+  }
+
+  private fun applyHafizPageAction(action: HafizPageAction) {
+    val firstWords = if (action == HafizPageAction.REVEAL_FIRST_WORD) 1 else 0
+    if (!quranSettings.isHafizModeEnabled ||
+      quranSettings.hafizFirstWordsCount != firstWords
+    ) {
+      quranSettings.setHafizModeEnabled(true)
+      quranSettings.setHafizFirstWordsCount(firstWords)
+      refreshQuranPages()
+    }
+    updateHafizActionIcon()
+    applyHafizActionToPage(viewPager.currentItem, currentPage, action)
+    if (isDualPages) {
+      applyHafizActionToPage(viewPager.currentItem + 1, currentPage + 1, action)
+    }
+  }
+
+  private fun applyHafizActionToPage(position: Int, page: Int, action: HafizPageAction) {
+    val fragment = pagerAdapter.getFragmentIfExists(position) as? QuranPage ?: return
+    fragment.getAyahTracker().applyHafizPageAction(page, action)
   }
 
   private fun switchToQuran() {
@@ -2064,6 +2203,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     const val EXTRA_JUMP_TO_TRANSLATION: String = "jumpToTranslation"
     const val EXTRA_HIGHLIGHT_SURA: String = "highlightSura"
     const val EXTRA_HIGHLIGHT_AYAH: String = "highlightAyah"
+    const val EXTRA_HIGHLIGHT_END_AYAH: String = "highlightEndAyah"
     const val LAST_WAS_DUAL_PAGES: String = "wasDualPages"
 
     private const val DEFAULT_HIDE_AFTER_TIME: Long = 2000

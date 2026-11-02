@@ -5,6 +5,8 @@ import com.quran.data.model.AyahGlyph
 import com.quran.data.model.SuraAyah
 import com.quran.data.model.highlight.HighlightType
 import com.quran.data.model.selection.SelectionIndicator
+import com.quran.labs.androidquran.data.HafizRevealStyle
+import com.quran.labs.androidquran.data.HafizPageAction
 import com.quran.page.common.data.AyahCoordinates
 import com.quran.page.common.data.PageCoordinates
 
@@ -57,6 +59,44 @@ class AyahSplitConsolidationTrackerItem(
 
   override fun getGlyphForPosition(page: Int, x: Float, y: Float): AyahGlyph? {
     return imageTrackerItem.getGlyphForPosition(page, x, y)
+  }
+
+  override fun isPointOnPage(page: Int, x: Float, y: Float): Boolean {
+    return imageTrackerItem.isPointOnPage(page, x, y)
+  }
+
+  override fun revealHafizAyah(page: Int, x: Float, y: Float) {
+    imageTrackerItem.revealHafizAyah(page, x, y)
+  }
+
+  override fun revealHafizAyahOnTap(
+    page: Int,
+    sura: Int,
+    ayah: Int,
+    style: HafizRevealStyle
+  ): Boolean {
+    return imageTrackerItem.revealHafizAyahOnTap(page, sura, ayah, style)
+  }
+
+  override fun revealHafizAyahOnLongPress(
+    page: Int,
+    sura: Int,
+    ayah: Int,
+    style: HafizRevealStyle
+  ): Boolean {
+    return imageTrackerItem.revealHafizAyahOnLongPress(page, sura, ayah, style)
+  }
+
+  override fun revealNextHafizPageAyah(page: Int): Boolean {
+    return imageTrackerItem.revealNextHafizPageAyah(page)
+  }
+
+  override fun hidePreviousHafizPageAyah(page: Int): Boolean {
+    return imageTrackerItem.hidePreviousHafizPageAyah(page)
+  }
+
+  override fun applyHafizPageAction(action: HafizPageAction): Boolean {
+    return imageTrackerItem.applyHafizPageAction(action)
   }
 
   override fun getAyahView(): View {

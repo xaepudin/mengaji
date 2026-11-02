@@ -121,6 +121,14 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <data android:scheme="quran"/>
       </intent-filter>
+      <intent-filter android:autoVerify="false">
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:host="quran.com"
+            android:scheme="https" />
+      </intent-filter>
     </activity>
 
     <!-- declare the default searchable Activity for the whole app -->

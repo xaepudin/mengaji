@@ -1,5 +1,5 @@
 package com.quran.labs.androidquran.ui.helpers
 
 interface AyahSelectedListener {
-  enum class EventType { SINGLE_TAP, LONG_PRESS, DOUBLE_TAP }
+  enum class EventType { SINGLE_TAP, LONG_PRESS, DOUBLE_TAP, SWIPE_DOWN, SWIPE_UP }
 }

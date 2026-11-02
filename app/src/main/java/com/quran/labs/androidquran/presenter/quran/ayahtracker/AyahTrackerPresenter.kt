@@ -25,6 +25,9 @@ import com.quran.data.model.selection.startSuraAyah
 import com.quran.labs.androidquran.common.QuranAyahInfo
 import com.quran.labs.androidquran.common.audio.model.playback.currentPlaybackAyah
 import com.quran.labs.androidquran.common.audio.repository.AudioStatusRepository
+import com.quran.labs.androidquran.data.HafizModeType
+import com.quran.labs.androidquran.data.HafizPageAction
+import com.quran.labs.androidquran.data.HafizRevealStyle
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.data.SuraAyahIterator
 import com.quran.labs.androidquran.presenter.Presenter
@@ -312,8 +315,16 @@ class AyahTrackerPresenter @Inject constructor(
     page: Int,
     ayahCoordinatesError: Boolean
   ): Boolean {
+    if (eventType == EventType.SWIPE_DOWN || eventType == EventType.SWIPE_UP) {
+      handleHafizSwipe(page, eventType)
+      return true
+    }
+
     if (eventType === DOUBLE_TAP) {
       readingEventPresenter.onAyahSelection(AyahSelection.None)
+    } else if (eventType == LONG_PRESS && isHafizModeEnabled()) {
+      // in hafiz mode a long press applies the configured long press action instead of selecting
+      handleHafizLongPress(page, event)
     } else if (eventType == LONG_PRESS ||
       readingEventPresenter.currentAyahSelection() != AyahSelection.None
     ) {
@@ -324,6 +335,9 @@ class AyahTrackerPresenter @Inject constructor(
         // either a press or a long press, but we're in selection mode
         handleAyahSelection(event, eventType, page)
       }
+    } else if (eventType == SINGLE_TAP && isHafizModeEnabled() &&
+      handleHafizTap(page, event)) {
+      // hafiz mode applied the configured short press action
     } else if (eventType == SINGLE_TAP && recitationEventPresenter.hasRecitationSession()) {
       handleTap(event, eventType, page)
     } else {
@@ -333,6 +347,46 @@ class AyahTrackerPresenter @Inject constructor(
     return true
   }
 
+  private fun handleHafizTap(page: Int, event: MotionEvent): Boolean {
+    val item = items.firstOrNull {
+      it.page == page && it.isPointOnPage(page, event.x, event.y)
+    } ?: return false
+    val ayah = item.getAyahForPosition(page, event.x, event.y) ?: return false
+    val style = HafizRevealStyle.fromKey(
+      quranSettings.hafizShortPressStyle,
+      HafizRevealStyle.REVEAL
+    )
+    return item.revealHafizAyahOnTap(page, ayah.sura, ayah.ayah, style)
+  }
+
+  private fun handleHafizLongPress(page: Int, event: MotionEvent) {
+    val item = items.firstOrNull {
+      it.page == page && it.isPointOnPage(page, event.x, event.y)
+    } ?: return
+    val ayah = item.getAyahForPosition(page, event.x, event.y) ?: return
+    val style = HafizRevealStyle.fromKey(quranSettings.hafizLongPressStyle)
+    item.revealHafizAyahOnLongPress(page, ayah.sura, ayah.ayah, style)
+  }
+
+  private fun isHafizPerPage(): Boolean =
+    HafizModeType.fromKey(quranSettings.hafizModeType) == HafizModeType.PAGE
+
+  override fun applyHafizPageAction(page: Int, action: HafizPageAction) {
+    items.firstOrNull { it.page == page }?.applyHafizPageAction(action)
+  }
+
+  private fun handleHafizSwipe(page: Int, eventType: EventType) {
+    if (!isHafizModeEnabled() || !isHafizPerPage() || !quranSettings.isHafizSwipeEnabled) {
+      return
+    }
+    val item = items.firstOrNull { it.page == page } ?: return
+    if (eventType == EventType.SWIPE_DOWN) {
+      item.revealNextHafizPageAyah(page)
+    } else {
+      item.hidePreviousHafizPageAyah(page)
+    }
+  }
+
   private fun handleAyahSelection(
     ev: MotionEvent,
     eventType: EventType,
@@ -340,6 +394,9 @@ class AyahTrackerPresenter @Inject constructor(
   ) {
     val result = getAyahForPosition(page, ev.x, ev.y)
     if (result != null) {
+      if (isHafizModeEnabled()) {
+        revealHafizAyah(page, ev.x, ev.y)
+      }
       if (eventType == SINGLE_TAP) {
         readingEventPresenter.onAyahSelection(
           AyahSelection.Ayah(result, getToolBarPosition(result.sura, result.ayah))
@@ -348,6 +405,13 @@ class AyahTrackerPresenter @Inject constructor(
         handleLongPress(result)
       }
     }
+  }
+
+  private fun isHafizModeEnabled(): Boolean = quranSettings.isHafizModeEnabled
+
+  private fun revealHafizAyah(page: Int, x: Float, y: Float) {
+    items.firstOrNull { it.page == page && it.isPointOnPage(page, x, y) }
+      ?.revealHafizAyah(page, x, y)
   }
 
   private fun handleTap(

@@ -14,6 +14,8 @@ import com.quran.common.upgrade.PreferencesUpgrade;
 import com.quran.labs.androidquran.BuildConfig;
 import com.quran.labs.androidquran.R;
 import com.quran.labs.androidquran.data.Constants;
+import com.quran.labs.androidquran.data.HafizModeType;
+import com.quran.labs.androidquran.data.HafizRevealStyle;
 import com.quran.labs.androidquran.service.QuranDownloadService;
 import com.quran.mobile.feature.pagetheme.PageTheme;
 import com.quran.mobile.feature.pagetheme.PageThemeConstants;
@@ -150,6 +152,64 @@ public class QuranSettings implements PageThemeSettings {
 
   public boolean shouldHighlightBookmarks() {
     return prefs.getBoolean(Constants.PREF_HIGHLIGHT_BOOKMARKS, true);
+  }
+
+  public boolean isHafizModeEnabled() {
+    return prefs.getBoolean(Constants.PREF_HAFIZ_MODE, false);
+  }
+
+  public void setHafizModeEnabled(boolean enabled) {
+    prefs.edit().putBoolean(Constants.PREF_HAFIZ_MODE, enabled).apply();
+  }
+
+  public String getHafizModeType() {
+    return prefs.getString(Constants.PREF_HAFIZ_MODE_TYPE, HafizModeType.PAGE.getKey());
+  }
+
+  public void setHafizModeType(String type) {
+    prefs.edit().putString(Constants.PREF_HAFIZ_MODE_TYPE, type).apply();
+  }
+
+  public boolean isHafizShowAyahNumbers() {
+    return prefs.getBoolean(Constants.PREF_HAFIZ_SHOW_AYAH_NUMBERS, true);
+  }
+
+  public boolean isHafizSwipeEnabled() {
+    return prefs.getBoolean(Constants.PREF_HAFIZ_SWIPE_ENABLED, true);
+  }
+
+  public void setHafizSwipeEnabled(boolean enabled) {
+    prefs.edit().putBoolean(Constants.PREF_HAFIZ_SWIPE_ENABLED, enabled).apply();
+  }
+
+  public int getHafizFirstWordsCount() {
+    return prefs.getInt(Constants.PREF_HAFIZ_FIRST_WORDS_COUNT, 0);
+  }
+
+  public void setHafizFirstWordsCount(int count) {
+    prefs.edit().putInt(Constants.PREF_HAFIZ_FIRST_WORDS_COUNT, count).apply();
+  }
+
+  public void setHafizShowAyahNumbers(boolean showAyahNumbers) {
+    prefs.edit().putBoolean(Constants.PREF_HAFIZ_SHOW_AYAH_NUMBERS, showAyahNumbers).apply();
+  }
+
+  public String getHafizLongPressStyle() {
+    return prefs.getString(
+        Constants.PREF_HAFIZ_LONG_PRESS_STYLE, HafizRevealStyle.REVEAL.getKey());
+  }
+
+  public void setHafizLongPressStyle(String style) {
+    prefs.edit().putString(Constants.PREF_HAFIZ_LONG_PRESS_STYLE, style).apply();
+  }
+
+  public String getHafizShortPressStyle() {
+    return prefs.getString(
+        Constants.PREF_HAFIZ_SHORT_PRESS_STYLE, HafizRevealStyle.REVEAL.getKey());
+  }
+
+  public void setHafizShortPressStyle(String style) {
+    prefs.edit().putString(Constants.PREF_HAFIZ_SHORT_PRESS_STYLE, style).apply();
   }
 
   public boolean wantArabicInTranslationView() {

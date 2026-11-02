@@ -18,6 +18,7 @@ import com.quran.page.common.data.coordinates.PageGlyphsCoords;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +130,7 @@ public class AyahInfoDatabaseHandler {
     boolean includeGlyphData = hasGlyphData && haveGlyphData();
     GlyphsBuilder glyphsBuilder = new GlyphsBuilder();
     Map<String, List<AyahBounds>> ayahBounds = new HashMap<>();
+    Map<String, List<AyahBounds>> wordBounds = new HashMap<>();
     Cursor cursor = null;
     try {
       cursor = getVersesBoundsCursorForPage(page, includeGlyphData);
@@ -166,6 +168,16 @@ public class AyahInfoDatabaseHandler {
           bounds.add(bound);
         }
         ayahBounds.put(key, bounds);
+
+        // the rows of the ayahinfo database are one per word, in reading order
+        List<AyahBounds> words = wordBounds.get(key);
+        if (words == null) {
+          words = new ArrayList<>();
+          wordBounds.put(key, words);
+        }
+        // use a copy so that merging the ayah bounds into one bound per line does not
+        // grow the word bounds
+        words.add(new AyahBounds(line, position, minX, minY, maxX, maxY));
       }
     } finally {
       DatabaseUtils.closeCursor(cursor);
@@ -174,7 +186,8 @@ public class AyahInfoDatabaseHandler {
     PageGlyphsCoords glyphCoords = includeGlyphData ?
         new PageGlyphsCoords(page, glyphsBuilder.build()) : null;
 
-    return new AyahCoordinates(page, ayahBounds, glyphCoords);
+    return new AyahCoordinates(page, ayahBounds, glyphCoords,
+        Collections.emptyMap(), 0f, wordBounds);
   }
 
   private boolean haveVerseMarkerData() {

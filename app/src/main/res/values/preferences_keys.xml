@@ -14,6 +14,12 @@
   <string translatable="false" name="prefs_overlay_page_info">overlayPageInfo</string>
   <string translatable="false" name="prefs_display_marker_popup">displayMarkerPopup</string>
   <string translatable="false" name="prefs_highlight_bookmarks">highlightBookmarks</string>
+  <string translatable="false" name="prefs_hafiz_mode">hafizMode</string>
+  <string translatable="false" name="prefs_hafiz_mode_type">hafizModeType</string>
+  <string translatable="false" name="prefs_hafiz_show_ayah_numbers">hafizShowAyahNumbers</string>
+  <string translatable="false" name="prefs_hafiz_swipe_enabled">hafizSwipeEnabled</string>
+  <string translatable="false" name="prefs_hafiz_long_press_style">hafizLongPressStyle</string>
+  <string translatable="false" name="prefs_hafiz_short_press_style">hafizShortPressStyle</string>
   <string translatable="false" name="prefs_lock_orientation">lockOrientation</string>
   <string translatable="false" name="prefs_landscape_orientation">landscapeOrientation</string>
   <string translatable="false" name="prefs_ayah_text_size">ayahTextSize</string>
