@@ -48,8 +48,8 @@ class ShortcutsActivity : AppCompatActivity() {
   }
 
   companion object {
-    const val ACTION_JUMP_TO_LATEST = "com.quran.labs.androidquran.last_page"
-    const val ACTION_JUMP_TO = "com.quran.labs.androidquran.jump_to"
+    const val ACTION_JUMP_TO_LATEST = "com.xaepudin.mengaji.last_page"
+    const val ACTION_JUMP_TO = "com.xaepudin.mengaji.jump_to"
     private const val JUMP_TO_LATEST_SHORTCUT_NAME = "lastPage"
     private const val JUMP_TO_SHORTCUT_NAME = "jumpTo"
   }

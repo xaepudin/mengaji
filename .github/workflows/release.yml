@@ -1,0 +1,127 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: "Version code (optional, defaults to the value in app/build.gradle.kts)"
+        required: false
+      version_name:
+        description: "Version name (optional, defaults to the tag or app/build.gradle.kts)"
+        required: false
+      build_apk:
+        description: "Build an APK"
+        type: boolean
+        default: true
+      build_bundle:
+        description: "Build an AAB for the Play Store"
+        type: boolean
+        default: true
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build release package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v7
+
+      - name: Setup JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version-file: .github/workflows/.java-version
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Prepare signing
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release-key.jks"
+            ARGS="-PSTORE_FILE=$RUNNER_TEMP/release-key.jks"
+            ARGS="$ARGS -PSTORE_PASSWORD=$STORE_PASSWORD"
+            ARGS="$ARGS -PKEY_ALIAS=$KEY_ALIAS"
+            ARGS="$ARGS -PKEY_PASSWORD=$KEY_PASSWORD"
+            echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "args=" >> "$GITHUB_OUTPUT"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Signing secrets are not configured; the release artifacts will be unsigned."
+          fi
+
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION_CODE: ${{ inputs.version_code }}
+          INPUT_VERSION_NAME: ${{ inputs.version_name }}
+        run: |
+          VERSION_ARGS=""
+          if [ -n "$INPUT_VERSION_CODE" ]; then
+            VERSION_ARGS="$VERSION_ARGS -PVERSION_CODE=$INPUT_VERSION_CODE"
+          fi
+          if [ -n "$INPUT_VERSION_NAME" ]; then
+            VERSION_ARGS="$VERSION_ARGS -PVERSION_NAME=$INPUT_VERSION_NAME"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION_ARGS="$VERSION_ARGS -PVERSION_NAME=${GITHUB_REF_NAME#v}"
+          fi
+          echo "args=$VERSION_ARGS" >> "$GITHUB_OUTPUT"
+
+      - name: Build APK
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_apk }}
+        env:
+          VERSION_ARGS: ${{ steps.version.outputs.args }}
+          SIGN_ARGS: ${{ steps.signing.outputs.args }}
+        run: ./gradlew assembleMadaniRelease -PdisableFirebase $VERSION_ARGS $SIGN_ARGS
+
+      - name: Build AAB
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_bundle }}
+        env:
+          VERSION_ARGS: ${{ steps.version.outputs.args }}
+          SIGN_ARGS: ${{ steps.signing.outputs.args }}
+        run: ./gradlew bundleMadaniRelease -PdisableFirebase $VERSION_ARGS $SIGN_ARGS
+
+      - name: Upload APK
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_apk }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: mengaji-release-apk
+          path: app/build/outputs/apk/madani/release/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload AAB
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_bundle }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: mengaji-release-aab
+          path: app/build/outputs/bundle/madaniRelease/*.aab
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/build/outputs/apk/madani/release/*.apk
+            app/build/outputs/bundle/madaniRelease/*.aab
+          generate_release_notes: true
+          fail_on_unmatched_files: false

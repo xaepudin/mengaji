@@ -36,8 +36,8 @@ android {
   namespace = "com.quran.labs.androidquran"
 
   defaultConfig {
-    versionCode = 3650
-    versionName = "3.6.5"
+    versionCode = (project.findProperty("VERSION_CODE") as String?)?.toIntOrNull() ?: 3650
+    versionName = (project.findProperty("VERSION_NAME") as String?) ?: "3.6.5"
     testInstrumentationRunner = "com.quran.labs.androidquran.core.QuranTestRunner"
   }
 
@@ -63,18 +63,21 @@ android {
   buildFeatures.buildConfig = true
 
   signingConfigs {
-    create("release") {
-      storeFile = file((project.property("STORE_FILE") as String))
-      storePassword = project.property("STORE_PASSWORD") as String
-      keyAlias = project.property("KEY_ALIAS") as String
-      keyPassword = project.property("KEY_PASSWORD") as String
+    val storeFileProperty = project.findProperty("STORE_FILE") as String?
+    if (!storeFileProperty.isNullOrBlank() && project.file(storeFileProperty).exists()) {
+      create("release") {
+        storeFile = project.file(storeFileProperty)
+        storePassword = project.property("STORE_PASSWORD") as String
+        keyAlias = project.property("KEY_ALIAS") as String
+        keyPassword = project.property("KEY_PASSWORD") as String
+      }
     }
   }
 
   flavorDimensions += listOf("pageType")
   productFlavors {
     create("madani") {
-      applicationId = "com.quran.labs.androidquran"
+      applicationId = "com.xaepudin.mengaji"
     }
   }
 
@@ -83,7 +86,7 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard.cfg")
-      signingConfig = signingConfigs.getByName("release")
+      signingConfigs.findByName("release")?.let { signingConfig = it }
       versionNameSuffix = "-beta"
       matchingFallbacks += listOf("debug", "release")
     }
@@ -98,7 +101,7 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard.cfg")
-      signingConfig = signingConfigs.getByName("release")
+      signingConfigs.findByName("release")?.let { signingConfig = it }
     }
   }
 

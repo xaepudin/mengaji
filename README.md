@@ -42,6 +42,25 @@ device or emulator with:
 adb install -r app/build/outputs/apk/madani/debug/app-madani-debug.apk
 ```
 
+## Release builds
+
+The `Release` GitHub Actions workflow builds a release APK and a Play Store AAB, either manually
+(**Actions → Release → Run workflow**) or when a `v*` tag is pushed. Tag releases are published
+on the GitHub releases page.
+
+Add these repository secrets to sign the artifacts:
+
+| Secret | Value |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | Base64 of the release keystore (`base64 -i release-key.jks`) |
+| `ANDROID_STORE_PASSWORD` | Keystore password |
+| `ANDROID_KEY_ALIAS` | Key alias |
+| `ANDROID_KEY_PASSWORD` | Key password |
+
+Without the secrets the workflow still builds, but the APK and AAB are unsigned. The pipeline
+builds with `-PdisableFirebase`, so analytics and crash reporting are not included; register the
+app id (`com.xaepudin.mengaji`) in your own Firebase project if you want them back.
+
 ## About this fork
 
 This repository is a fork of [quran/quran_android](https://github.com/quran/quran_android). All
