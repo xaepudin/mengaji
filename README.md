@@ -1,77 +1,89 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/quran/quran_android/main/app/src/madani/res/drawable-xxhdpi/icon.png" alt='Quran for Android logo'/>
+<img src="https://raw.githubusercontent.com/quran/quran_android/main/app/src/madani/res/drawable-xxhdpi/icon.png" alt='Mengaji logo'/>
 
-# Quran for Android
+# Mengaji
 
-[![Build Status](https://github.com/quran/quran_android/actions/workflows/build.yml/badge.svg)](https://github.com/quran/quran_android/actions/workflows/build.yml)
-[![Version](https://img.shields.io/github/v/release/quran/quran_android?include_prereleases&sort=semver)](https://github.com/quran/quran_android/releases/latest)
-[![Github Downloads](https://img.shields.io/github/downloads/quran/quran_android/total?logo=Github)](https://github.com/quran/quran_android/releases)
+A Quran reading app for Android, built for daily reading and memorization (hifz).
 
-This is a simple (Madani based) Quran app for Android.
+Mengaji is a fork of the excellent [Quran for Android](https://github.com/quran/quran_android)
+project created by the Quran.com team and its contributors.
 
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-      alt='Get it on Google Play'
-      height="80">](https://play.google.com/store/apps/details?id=com.quran.labs.androidquran)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
-      alt="Get it at IzzyOnDroid"
-      height="80">](https://apt.izzysoft.de/packages/com.quran.labs.androidquran)
-[<img src="https://user-images.githubusercontent.com/69304392/148696068-0cfea65d-b18f-4685-82b5-329a330b1c0d.png"
-      alt='Get it on GitHub'
-      height="80">](https://github.com/quran/quran_android/releases/latest)
+</div>
 
-<div align="left">
+## What you can do
+
+- **Read the Quran** using the beautiful Madani page images, with translations and tafsir in many
+  languages.
+- **Listen to recitations** from several reciters, with repeat and playback speed controls.
+- **Memorize with Hifz Mode** — cover the ayahs on a page and reveal them as you recite:
+  - **Per ayah**: tap an ayah to reveal or hide it, or reveal it word by word.
+  - **Per page**: reveal from the beginning of the page; swipe down to reveal the next ayah and
+    swipe up to hide the previous one.
+  - **Show only the first word** (or the first few words) of every ayah, then reveal more with each
+    long press.
+  - Keep the ayah number markers visible while the text is covered.
+- **Bookmark** pages and ayahs, tag them, and keep track of your reading progress.
+- **Search** the Quran and translations.
+- **Adjust the reading experience**: night mode, page themes, text size, and more.
+
+## Install
+
+The app is built from source. You need the Android SDK and JDK 17 or newer.
+
+```bash
+./gradlew assembleMadaniDebug
+```
+
+The APK is written to `app/build/outputs/apk/madani/debug/app-madani-debug.apk`. Install it on a
+device or emulator with:
+
+```bash
+adb install -r app/build/outputs/apk/madani/debug/app-madani-debug.apk
+```
+
+## About this fork
+
+This repository is a fork of [quran/quran_android](https://github.com/quran/quran_android). All
+credit for the original application, its architecture, data, and translations belongs to the
+original authors and contributors.
+
+The main addition in this fork is **Hifz Mode**, a memorization aid that covers the page and lets
+you reveal ayahs as you recite them.
 
 ## Credits
 
-* madani images from [quran images project](https://github.com/quran/quran.com-images) on github.
-* qaloon images used with permission of Nous Memes Editions Et Diffusion (Tunisia).
-* naskh images used with permission of SHL Info Systems.
-* translation, tafsir and Arabic data come from [quranenc](https://quranenc.com) and [King Saud University](https://quran.ksu.edu.sa). a small number of translations also come from [tanzil](http://tanzil.net).
+- Original project: [Quran for Android](https://github.com/quran/quran_android) by the Quran.com
+  team and its [contributors](https://github.com/quran/quran_android/blob/main/CONTRIBUTORS.md).
+- Madani images from the [quran images project](https://github.com/quran/quran.com-images) on
+  GitHub.
+- Qaloon images used with permission of Nous Memes Editions Et Diffusion (Tunisia).
+- Naskh images used with permission of SHL Info Systems.
+- Translation, tafsir and Arabic data come from [quranenc](https://quranenc.com) and
+  [King Saud University](https://quran.ksu.edu.sa). A small number of translations also come from
+  [tanzil](http://tanzil.net).
 
-## Contributing
+May Allah reward all the awesome contributors and translators of the original project.
 
-If you'd like to contribute, please take a look at the [PRs Welcome](https://github.com/quran/quran_android/issues?q=is%3Aissue+is%3Aopen+label%3A%22PRs+Welcome%22) label on the issue tracker. For new features, please open an issue to discuss it before beginning implementation.
+## License
 
-Use [`quran_android-code_style.xml`](https://github.com/quran/quran_android/blob/main/quran_android-code_style.xml) for Android Studio / IntelliJ code styles. Import it by copying it to the Android Studio/IntelliJ IDEA codestyles folder. For Android Studio, that folder is located at `~/.AndroidStudio[Version]/config/codestyles` (the root folder name may differ depending on the host machine and Android Studio version, but the rest of the path should be same). After copying the `quran_android-code_style.xml`, go to Code Style preferences screen and choose `quran_android-code_style` from Code Style Schemes.
+GNU General Public License v3.0 — see [LICENSE](LICENSE).
 
-Please set your Android studio kotlin code style based on [Kotlin Coding Conventions](https://kotlinlang.org/docs/reference/coding-conventions.html). You can configure it from menu Settings | Editor | Code Style | Kotlin, click on "Set from…" link in the upper right corner, and select "Predefined style / Kotlin style guide" from the menu.
-
-May Allah reward all the awesome [Contributors and Translators](https://github.com/quran/quran_android/blob/main/CONTRIBUTORS.md).
-
-
-## Setup
-
-### Command Line
-
-You can build Quran from the command line by running `./gradlew assembleMadaniDebug`.
-
-### Android Studio / IntelliJ
-
-Choose "Import Project," and choose the `build.gradle` file from the top level directory. Under "Build Variants" (a tab on the left side), choose "madaniDebug."
-
-## Using Quran for Android code in other projects
-
-The intention behind open sourcing Quran for Android is two fold - first, to allow developers to help contribute to the app, thus speeding up the development of new features and ideas. Second, to give back to the community and serve as a code reference.
-
-Quran for Android costs money to run - all the data (pages, audio files, and translations) are hosted on servers that people volunteer their money to pay for every month. Moreover, the data itself is the work of various scholars, organizations, or reciters, many of whom provide this data free for usage for the benefit of the ummah.
-
-Therefore, people planning on taking this project and profiting from it (by way of ads, in app purchases, etc) are in fact stealing from the work of the contributors of this project, and from the people who volunteer to pay for the servers (since they increase the bandwidth costs on them instead of covering them themselves).
-
-Please keep use of this code for non-profit purposes only. Also, please note that the project is under the GPL 3 license, which requires that modifications to this code be open sourced as well. Please note that the data is licensed under the various licenses of the data's authors (typically, this is [CC BY-NC-ND](https://creativecommons.org/licenses/by-nc-nd/2.0/), but may differ depending on the source of the data).
-
+Please keep use of this code for non-profit purposes only. The data is licensed under the licenses
+of the data's authors (typically [CC BY-NC-ND](https://creativecommons.org/licenses/by-nc-nd/2.0/),
+but may differ depending on the source of the data).
 
 ## Open Source Projects Used
 
-* [AndroidX](https://developer.android.com/jetpack/androidx/)
-* [Kotlin](https://kotlinlang.org)
-* [Material Design Components](https://github.com/material-components/material-components-android)
-* [AndroidSlidingUpPanel](https://github.com/umano/AndroidSlidingUpPanel)
-* [OkHttp](https://github.com/square/okhttp)
-* [RxJava 2](https://github.com/ReactiveX/RxJava)
-* [RxAndroid](https://github.com/ReactiveX/RxAndroid)
-* [Moshi](https://github.com/square/moshi)
-* [Dagger2](https://google.github.io/dagger/)
-* [Timber](https://github.com/JakeWharton/timber)
-* [dnsjava](http://dnsjava.org)
-* [NumberPicker](https://github.com/ShawnLin013/NumberPicker)
+- [AndroidX](https://developer.android.com/jetpack/androidx/)
+- [Kotlin](https://kotlinlang.org)
+- [Material Design Components](https://github.com/material-components/material-components-android)
+- [AndroidSlidingUpPanel](https://github.com/umano/AndroidSlidingUpPanel)
+- [OkHttp](https://github.com/square/okhttp)
+- [RxJava 2](https://github.com/ReactiveX/RxJava)
+- [RxAndroid](https://github.com/ReactiveX/RxAndroid)
+- [Moshi](https://github.com/square/moshi)
+- [Dagger2](https://google.github.io/dagger/)
+- [Timber](https://github.com/JakeWharton/timber)
+- [dnsjava](http://dnsjava.org)
+- [NumberPicker](https://github.com/ShawnLin013/NumberPicker)
