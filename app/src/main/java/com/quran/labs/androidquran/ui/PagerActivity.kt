@@ -73,6 +73,7 @@ import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.QuranPreferenceActivity
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.SearchActivity
+import com.quran.labs.androidquran.ayahsearch.AyahSearchActivity
 import com.quran.labs.androidquran.common.QuranAyahInfo
 import com.quran.labs.androidquran.common.audio.model.QariItem
 import com.quran.labs.androidquran.common.audio.model.QariItem.Companion.fromQari
@@ -1252,6 +1253,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       return true
     } else if (itemId == R.id.page_theme) {
       showPageThemeSheet()
+      return true
+    } else if (itemId == R.id.ayah_search) {
+      startActivity(Intent(this, AyahSearchActivity::class.java))
       return true
     } else if (itemId == R.id.settings) {
       val i = Intent(this, QuranPreferenceActivity::class.java)

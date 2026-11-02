@@ -25,6 +25,8 @@ project created by the Quran.com team and its contributors.
   - Keep the ayah number markers visible while the text is covered.
 - **Bookmark** pages and ayahs, tag them, and keep track of your reading progress.
 - **Search** the Quran and translations.
+- **Ayah search** with Lafzi: type how an ayah sounds (for example, `bismillah`) or type it in
+  Arabic, then open a matching ayah directly in the reader.
 - **Adjust the reading experience**: night mode, page themes, text size, and more.
 
 ## Install
@@ -67,13 +69,24 @@ This repository is a fork of [quran/quran_android](https://github.com/quran/qura
 credit for the original application, its architecture, data, and translations belongs to the
 original authors and contributors.
 
-The main addition in this fork is **Hifz Mode**, a memorization aid that covers the page and lets
-you reveal ayahs as you recite them.
+The main additions in this fork are **Hifz Mode**, a memorization aid that covers the page and lets
+you reveal ayahs as you recite them, and **Ayah search**, a Lafzi-powered search that finds an ayah
+from how it sounds.
+
+## Ayah search data
+
+The ayah search feature uses the index from [Lafzi](https://github.com/lafzi/lafzi-android) and
+[lafzi-indexer](https://github.com/lafzi/lafzi-indexer), both licensed under GPL-3.0. The bundled
+index lives at `app/src/main/assets/ayah_search/lafzi.sqlite.gz`. It is stored compressed in the
+repository so a checkout stays small; the Android build tools expand `.gz` assets, so the app reads
+`assets/ayah_search/lafzi.sqlite` and copies it into private storage on first use.
 
 ## Credits
 
 - Original project: [Quran for Android](https://github.com/quran/quran_android) by the Quran.com
   team and its [contributors](https://github.com/quran/quran_android/blob/main/CONTRIBUTORS.md).
+- Ayah search index from [Lafzi](https://github.com/lafzi/lafzi-android) and
+  [lafzi-indexer](https://github.com/lafzi/lafzi-indexer).
 - Madani images from the [quran images project](https://github.com/quran/quran.com-images) on
   GitHub.
 - Qaloon images used with permission of Nous Memes Editions Et Diffusion (Tunisia).
@@ -96,6 +109,7 @@ but may differ depending on the source of the data).
 
 - [AndroidX](https://developer.android.com/jetpack/androidx/)
 - [Kotlin](https://kotlinlang.org)
+- [Lafzi](https://github.com/lafzi/lafzi-android)
 - [Material Design Components](https://github.com/material-components/material-components-android)
 - [AndroidSlidingUpPanel](https://github.com/umano/AndroidSlidingUpPanel)
 - [OkHttp](https://github.com/square/okhttp)

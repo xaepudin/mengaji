@@ -1,0 +1,8 @@
+The ayah search index in lafzi.sqlite is derived from the Lafzi project:
+
+- https://github.com/lafzi/lafzi-android
+- https://github.com/lafzi/lafzi-indexer
+
+Lafzi is licensed under the GNU General Public License v3.0. The bundled index is a trimmed
+copy: the surah name and Indonesian translation columns were removed, while the Uthmani Arabic
+text, vocal and non-vocal trigram indexes, and the quran_text FTS table are unchanged.

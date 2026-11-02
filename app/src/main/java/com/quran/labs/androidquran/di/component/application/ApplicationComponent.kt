@@ -10,6 +10,7 @@ import com.quran.labs.androidquran.QuranDataActivity
 import com.quran.labs.androidquran.QuranForwarderActivity
 import com.quran.labs.androidquran.QuranImportActivity
 import com.quran.labs.androidquran.SearchActivity
+import com.quran.labs.androidquran.ayahsearch.AyahSearchActivity
 import com.quran.labs.androidquran.core.worker.di.WorkerModule
 import com.quran.labs.androidquran.data.QuranDataProvider
 import com.quran.labs.androidquran.di.component.activity.ActivityComponent
@@ -74,6 +75,7 @@ interface ApplicationComponent : QuranApplicationComponent {
   fun inject(quranImportActivity: QuranImportActivity)
   fun inject(quranForwarderActivity: QuranForwarderActivity)
   fun inject(searchActivity: SearchActivity)
+  fun inject(ayahSearchActivity: AyahSearchActivity)
   fun inject(pageSelectActivity: PageSelectActivity)
   fun inject(showJumpFragmentActivity: ShowJumpFragmentActivity)
   fun inject(bookmarkListActivity: BookmarkListActivity)

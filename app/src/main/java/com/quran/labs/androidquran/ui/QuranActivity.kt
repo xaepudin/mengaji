@@ -40,6 +40,7 @@ import com.quran.labs.androidquran.QuranPreferenceActivity
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.SearchActivity
 import com.quran.labs.androidquran.ShortcutsActivity
+import com.quran.labs.androidquran.ayahsearch.AyahSearchActivity
 import com.quran.labs.androidquran.data.Constants
 import com.quran.labs.androidquran.feature.reading.model.LatestPageTracker
 import com.quran.labs.androidquran.presenter.data.QuranIndexEventLogger
@@ -348,6 +349,9 @@ class QuranActivity : AppCompatActivity(),
       }
       R.id.last_page -> {
         jumpToLastPage()
+      }
+      R.id.ayah_search -> {
+        startActivity(Intent(this, AyahSearchActivity::class.java))
       }
       R.id.help -> {
         startActivity(Intent(this, HelpActivity::class.java))

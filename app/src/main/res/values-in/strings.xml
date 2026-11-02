@@ -24,6 +24,7 @@
   <string name="menu_back_to_page">Tampilan Mushaf</string>
   <string name="menu_help">Bantuan</string>
   <string name="menu_search">Cari</string>
+  <string name="menu_ayah_search">Cari ayat</string>
   <string name="menu_get_translations">Unduh Terjemahan</string>
   <string name="menu_jump">Lompat</string>
   <string name="gotoPage">Lompat ke halaman</string>
@@ -106,6 +107,21 @@
   <string name="no_results">Tidak ditemukan hasil untuk \"%s\"</string>
   <string name="no_arabic_search_available">Anda belum mengunduh paket pencarian bahasa Arab. Harap unduh dan coba lagi pencarian Anda.</string>
   <string name="get_arabic_search_db">Unduh Basis Data Pencarian Bahasa Arab</string>
+
+  <!-- Ayah search (Lafzi) -->
+  <string name="ayah_search_title">Cari ayat</string>
+  <string name="ayah_search_hint">Cari lafaz, mis. bismillah</string>
+  <string name="ayah_search_initial">Ketik lafaz dalam huruf Latin (bismillah) atau Arab, lalu tekan cari.</string>
+  <string name="ayah_search_searching">Mencari…</string>
+  <string name="ayah_search_no_results">Tidak ditemukan ayat untuk \"%1$s\"</string>
+  <string name="ayah_search_query_too_short">Ketik minimal 3 karakter</string>
+  <string name="ayah_search_error">Pencarian gagal. Silakan coba lagi.</string>
+  <string name="ayah_search_result_meta">%1$d. %2$s · Ayat %3$d · Halaman %4$d</string>
+  <string name="ayah_search_vocal">Pencarian berharakat</string>
+  <plurals name="ayah_search_result_count">
+    <item quantity="one">%1$d ayat ditemukan</item>
+    <item quantity="other">%1$d ayat ditemukan</item>
+  </plurals>
 
   <!-- Quran Preference Activity -->
   <string name="appearance">Tampilan</string>

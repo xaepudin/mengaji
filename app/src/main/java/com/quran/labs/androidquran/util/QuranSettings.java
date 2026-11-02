@@ -28,6 +28,7 @@ import java.util.Set;
 
 public class QuranSettings implements PageThemeSettings {
   private static final String PREFS_FILE = "com.quran.labs.androidquran.per_installation";
+  private static final String PREF_AYAH_SEARCH_VOCAL = "ayah_search_vocal";
 
   private static QuranSettings instance;
 
@@ -75,6 +76,14 @@ public class QuranSettings implements PageThemeSettings {
 
   public boolean shouldStream() {
     return prefs.getBoolean(Constants.PREF_PREFER_STREAMING, false);
+  }
+
+  public boolean isAyahSearchVocal() {
+    return prefs.getBoolean(PREF_AYAH_SEARCH_VOCAL, true);
+  }
+
+  public void setAyahSearchVocal(boolean vocal) {
+    prefs.edit().putBoolean(PREF_AYAH_SEARCH_VOCAL, vocal).apply();
   }
 
   @Override

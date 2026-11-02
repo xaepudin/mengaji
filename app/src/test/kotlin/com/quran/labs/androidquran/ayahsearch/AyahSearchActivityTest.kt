@@ -1,0 +1,56 @@
+package com.quran.labs.androidquran.ayahsearch
+
+import android.os.Looper
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textfield.TextInputEditText
+import com.google.common.truth.Truth.assertThat
+import com.quran.labs.androidquran.R
+import com.quran.labs.androidquran.base.TestApplication
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
+
+@Config(application = TestApplication::class, sdk = [33])
+@RunWith(RobolectricTestRunner::class)
+class AyahSearchActivityTest {
+
+  @Test
+  fun `inflates the search screen with an empty initial state`() {
+    Robolectric.buildActivity(AyahSearchActivity::class.java).use { controller ->
+      val activity = controller.setup().get()
+
+      assertThat(activity.findViewById<View>(R.id.search_input)).isNotNull()
+      assertThat(activity.findViewById<View>(R.id.search_input_layout)).isNotNull()
+      assertThat(activity.findViewById<View>(R.id.results_list)).isNotNull()
+      assertThat(activity.findViewById<View>(R.id.status_area)).isNotNull()
+      shadowOf(Looper.getMainLooper()).idle()
+      assertThat(activity.findViewById<View>(R.id.search_input).hasFocus()).isTrue()
+      assertThat(activity.isFinishing).isFalse()
+    }
+  }
+
+  @Test
+  fun `pressing search populates the result list`() {
+    Robolectric.buildActivity(AyahSearchActivity::class.java).use { controller ->
+      val activity = controller.setup().get()
+      val input = activity.findViewById<TextInputEditText>(R.id.search_input)
+      input.setText("bismillah")
+      input.onEditorAction(EditorInfo.IME_ACTION_SEARCH)
+
+      val results = activity.findViewById<RecyclerView>(R.id.results_list)
+      val deadline = System.currentTimeMillis() + 30_000
+      while (System.currentTimeMillis() < deadline && (results.adapter?.itemCount ?: 0) == 0) {
+        shadowOf(Looper.getMainLooper()).idle()
+        Thread.sleep(25)
+      }
+      shadowOf(Looper.getMainLooper()).idle()
+
+      assertThat(results.adapter?.itemCount ?: 0).isGreaterThan(0)
+    }
+  }
+}

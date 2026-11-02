@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="16dp"
+    android:background="@drawable/ayah_search_result_background"
+    android:foreground="?attr/selectableItemBackground"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+  <TextView
+      android:id="@+id/result_metadata"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:textColor="@color/text_hint_color"
+      android:textSize="13sp" />
+
+  <TextView
+      android:id="@+id/result_arabic"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
+      android:lineSpacingMultiplier="1.6"
+      android:textAlignment="textStart"
+      android:textColor="@color/text_primary"
+      android:textDirection="rtl"
+      android:textSize="22sp" />
+
+</LinearLayout>

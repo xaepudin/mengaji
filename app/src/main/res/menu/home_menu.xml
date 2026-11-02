@@ -51,6 +51,11 @@
       app:actionViewClass="androidx.appcompat.widget.SearchView"
       app:showAsAction="ifRoom|collapseActionView" />
   <item
+      android:id="@+id/ayah_search"
+      android:icon="@drawable/ic_ayah_search"
+      android:title="@string/menu_ayah_search"
+      app:showAsAction="always" />
+  <item
       android:id="@+id/jump"
       android:title="@string/menu_jump"
       app:showAsAction="never" />
