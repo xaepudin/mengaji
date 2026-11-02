@@ -76,6 +76,44 @@ class DatabaseHandler private constructor(
         Timber.e(e)
       }
     }
+
+    /**
+     * Reads translation texts for the given global ayah ids from a translation database.
+     *
+     * Extracted from [DatabaseHandler.getTranslationTexts] so the rowid mapping can be tested
+     * without opening a real translation file.
+     */
+    internal fun readTranslationTexts(
+      database: SQLiteDatabase,
+      ids: List<Int>
+    ): Map<Int, String> {
+      if (ids.isEmpty()) return emptyMap()
+
+      val builder = StringBuilder()
+      for (i in ids.indices) {
+        if (i > 0) {
+          builder.append(",")
+        }
+        builder.append(ids[i])
+      }
+
+      val sql = "SELECT rowid as _id, " + COL_TEXT + " FROM " + VERSE_TABLE +
+          " WHERE rowid in(" + builder.toString() + ")"
+      val results = HashMap<Int, String>(ids.size)
+      var cursor: Cursor? = null
+      try {
+        cursor = database.rawQuery(sql, null)
+        while (cursor.moveToNext()) {
+          val text = cursor.getString(1)
+          if (!text.isNullOrEmpty()) {
+            results[cursor.getInt(0)] = text
+          }
+        }
+      } finally {
+        DatabaseUtils.closeCursor(cursor)
+      }
+      return results
+    }
   }
 
   init {
@@ -294,6 +332,19 @@ class DatabaseHandler private constructor(
         " FROM " + QuranFileConstants.ARABIC_SHARE_TABLE +
         " WHERE rowid in(" + builder.toString() + ")"
     return database?.rawQuery(sql, null)
+  }
+
+  /**
+   * Loads translation texts for the given global ayah ids in a single query.
+   *
+   * Translation databases store each ayah in the `verses` table with the global ayah id as its
+   * rowid, so this is the same id space used by the rest of the app.
+   */
+  fun getTranslationTexts(ids: List<Int>): Map<Int, String> {
+    if (ids.isEmpty()) return emptyMap()
+    val db = database
+    if (db == null || !db.isOpen) return emptyMap()
+    return readTranslationTexts(db, ids)
   }
 
   fun search(query: String, withSnippets: Boolean, isArabicDatabase: Boolean): Cursor? {

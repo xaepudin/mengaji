@@ -29,6 +29,7 @@ import java.util.Set;
 public class QuranSettings implements PageThemeSettings {
   private static final String PREFS_FILE = "com.quran.labs.androidquran.per_installation";
   private static final String PREF_AYAH_SEARCH_VOCAL = "ayah_search_vocal";
+  private static final String PREF_AYAH_SEARCH_SHOW_TRANSLATION = "ayah_search_show_translation";
 
   private static QuranSettings instance;
 
@@ -84,6 +85,14 @@ public class QuranSettings implements PageThemeSettings {
 
   public void setAyahSearchVocal(boolean vocal) {
     prefs.edit().putBoolean(PREF_AYAH_SEARCH_VOCAL, vocal).apply();
+  }
+
+  public boolean isAyahSearchShowTranslation() {
+    return prefs.getBoolean(PREF_AYAH_SEARCH_SHOW_TRANSLATION, true);
+  }
+
+  public void setAyahSearchShowTranslation(boolean showTranslation) {
+    prefs.edit().putBoolean(PREF_AYAH_SEARCH_SHOW_TRANSLATION, showTranslation).apply();
   }
 
   @Override

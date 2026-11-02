@@ -6,4 +6,9 @@
       android:checkable="true"
       android:title="@string/ayah_search_vocal"
       app:showAsAction="never" />
+  <item
+      android:id="@+id/action_show_translation"
+      android:checkable="true"
+      android:title="@string/ayah_search_show_translation"
+      app:showAsAction="never" />
 </menu>

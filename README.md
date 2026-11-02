@@ -26,7 +26,8 @@ project created by the Quran.com team and its contributors.
 - **Bookmark** pages and ayahs, tag them, and keep track of your reading progress.
 - **Search** the Quran and translations.
 - **Ayah search** with Lafzi: type how an ayah sounds (for example, `bismillah`) or type it in
-  Arabic, then open a matching ayah directly in the reader.
+  Arabic, then open a matching ayah directly in the reader. The result list can show your selected
+  translation; toggle this in Settings → Translation or from the search screen's overflow menu.
 - **Adjust the reading experience**: night mode, page themes, text size, and more.
 
 ## Install

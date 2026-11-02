@@ -28,4 +28,17 @@
       android:textDirection="rtl"
       android:textSize="22sp" />
 
+  <TextView
+      android:id="@+id/result_translation"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
+      android:ellipsize="end"
+      android:maxLines="4"
+      android:textAlignment="textStart"
+      android:textColor="@color/ayah_search_translation"
+      android:textDirection="firstStrong"
+      android:textSize="14sp"
+      android:visibility="gone" />
+
 </LinearLayout>

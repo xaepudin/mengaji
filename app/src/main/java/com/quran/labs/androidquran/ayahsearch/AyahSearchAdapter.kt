@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.quran.data.core.QuranInfo
 import com.quran.labs.androidquran.R
@@ -59,6 +60,18 @@ class AyahSearchAdapter(
 
     holder.arabic.typeface = quranTypeface
     holder.arabic.text = buildArabicText(result)
+
+    val translation = result.translation
+    if (translation.isNullOrEmpty()) {
+      holder.translation.visibility = View.GONE
+    } else {
+      holder.translation.visibility = View.VISIBLE
+      holder.translation.text = HtmlCompat.fromHtml(
+        translation,
+        HtmlCompat.FROM_HTML_MODE_COMPACT
+      )
+    }
+
     holder.itemView.setOnClickListener { onResultClick(result) }
   }
 
@@ -90,5 +103,6 @@ class AyahSearchAdapter(
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val metadata: TextView = itemView.findViewById(R.id.result_metadata)
     val arabic: TextView = itemView.findViewById(R.id.result_arabic)
+    val translation: TextView = itemView.findViewById(R.id.result_translation)
   }
 }

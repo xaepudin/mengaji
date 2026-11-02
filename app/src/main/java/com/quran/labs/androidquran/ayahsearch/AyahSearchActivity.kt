@@ -47,6 +47,7 @@ import timber.log.Timber
 class AyahSearchActivity : AppCompatActivity() {
 
   @Inject lateinit var lafziSearchRepository: LafziSearchRepository
+  @Inject lateinit var ayahSearchTranslationRepository: AyahSearchTranslationRepository
   @Inject lateinit var quranNavigatorFactory: QuranNavigator.Factory
   @Inject lateinit var quranInfo: QuranInfo
   @Inject lateinit var quranDisplayData: QuranDisplayData
@@ -139,6 +140,8 @@ class AyahSearchActivity : AppCompatActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu): Boolean {
     menu.findItem(R.id.action_vocal_search)?.isChecked = isVocal
+    menu.findItem(R.id.action_show_translation)?.isChecked =
+      quranSettings.isAyahSearchShowTranslation()
     return super.onPrepareOptionsMenu(menu)
   }
 
@@ -153,10 +156,15 @@ class AyahSearchActivity : AppCompatActivity() {
         isVocal = !isVocal
         item.isChecked = isVocal
         quranSettings.setAyahSearchVocal(isVocal)
-        val query = lastQuery ?: searchInput.text?.toString()?.trim()
-        if (!query.isNullOrEmpty() && query.length >= MIN_QUERY_LENGTH) {
-          submitSearch(query)
-        }
+        rerunCurrentSearch()
+        true
+      }
+
+      R.id.action_show_translation -> {
+        val showTranslation = !quranSettings.isAyahSearchShowTranslation()
+        item.isChecked = showTranslation
+        quranSettings.setAyahSearchShowTranslation(showTranslation)
+        rerunCurrentSearch()
         true
       }
 
@@ -208,6 +216,13 @@ class AyahSearchActivity : AppCompatActivity() {
     }
   }
 
+  private fun rerunCurrentSearch() {
+    val query = lastQuery ?: searchInput.text?.toString()?.trim()
+    if (!query.isNullOrEmpty() && query.length >= MIN_QUERY_LENGTH) {
+      submitSearch(query)
+    }
+  }
+
   private fun submitSearch(rawQuery: String? = searchInput.text?.toString()) {
     val query = rawQuery?.trim().orEmpty()
     if (query.length < MIN_QUERY_LENGTH) {
@@ -229,13 +244,31 @@ class AyahSearchActivity : AppCompatActivity() {
     searchJob = lifecycleScope.launch {
       try {
         val results = lafziSearchRepository.search(query, isVocal)
-        renderResults(query, results)
+        renderResults(query, attachTranslations(results))
       } catch (exception: CancellationException) {
         throw exception
       } catch (exception: Exception) {
         Timber.e(exception, "Ayah search failed")
         renderError()
       }
+    }
+  }
+
+  private suspend fun attachTranslations(
+    results: List<AyahSearchResult>
+  ): List<AyahSearchResult> {
+    if (results.isEmpty() || !quranSettings.isAyahSearchShowTranslation()) {
+      return results
+    }
+
+    val translations = ayahSearchTranslationRepository.translationsFor(
+      results.map { it.ayahId }
+    )
+    if (translations.isEmpty()) {
+      return results
+    }
+    return results.map { result ->
+      result.copy(translation = translations[result.ayahId])
     }
   }
 

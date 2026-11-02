@@ -49,7 +49,7 @@
       android:icon="@drawable/ic_ab_search"
       android:title="@string/menu_search"
       app:actionViewClass="androidx.appcompat.widget.SearchView"
-      app:showAsAction="ifRoom|collapseActionView" />
+      app:showAsAction="always|collapseActionView" />
   <item
       android:id="@+id/ayah_search"
       android:icon="@drawable/ic_ayah_search"
