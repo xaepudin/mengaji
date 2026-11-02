@@ -166,13 +166,8 @@ androidComponents {
     }
 
     if (applicationId.endsWith("debug")) {
-      val name = variant.flavorName ?: variant.name
-      variant.manifestPlaceholders.put("app_debug_label",
-        "Quran ${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}")
-      unitTestManifestPlaceholders?.put(
-        "app_debug_label",
-        "Quran ${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}"
-      )
+      variant.manifestPlaceholders.put("app_debug_label", "Mengaji")
+      unitTestManifestPlaceholders?.put("app_debug_label", "Mengaji")
     }
   }
 }

@@ -54,7 +54,7 @@
       android:id="@+id/ayah_search"
       android:icon="@drawable/ic_ayah_search"
       android:title="@string/menu_ayah_search"
-      app:showAsAction="always" />
+      app:showAsAction="never" />
   <item
       android:id="@+id/jump"
       android:title="@string/menu_jump"

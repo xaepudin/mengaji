@@ -1,8 +1,7 @@
 package com.quran.labs.androidquran.ui
 
 import android.Manifest
-import android.app.SearchManager
-import android.content.ComponentName
+
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
@@ -34,7 +33,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -1187,20 +1185,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     super.onCreateOptionsMenu(menu)
     val inflater = menuInflater
     inflater.inflate(R.menu.quran_menu, menu)
-    val item = menu.findItem(R.id.search)
-    val searchView = item.actionView as SearchView
-    val searchManager = getSystemService(SEARCH_SERVICE) as SearchManager
-    searchView.queryHint = getString(R.string.search_hint)
-    searchView.setSearchableInfo(
-      searchManager.getSearchableInfo(
-        ComponentName(this, SearchActivity::class.java)
-      )
-    )
 
     // cache because invalidateOptionsMenu in a toolbar world always calls both
-    // onCreateOptionsMenu and onPrepareOptionsMenu, which can be expensive both
-    // due to inflation plus due to the search view specific setup work. we can
-    // directly modify the bookmark item using a reference to this instead.
+    // onCreateOptionsMenu and onPrepareOptionsMenu, which can be expensive due
+    // to inflation. we can directly modify the bookmark item using a reference
+    // to this instead.
     bookmarksMenuItem = menu.findItem(R.id.favorite_item)
     setupHafizActionView(menu)
     return true
@@ -1253,6 +1242,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       return true
     } else if (itemId == R.id.page_theme) {
       showPageThemeSheet()
+      return true
+    } else if (itemId == R.id.search) {
+      startActivity(Intent(this, SearchActivity::class.java))
       return true
     } else if (itemId == R.id.ayah_search) {
       startActivity(Intent(this, AyahSearchActivity::class.java))

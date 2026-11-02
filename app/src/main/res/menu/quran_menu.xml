@@ -16,12 +16,11 @@
     <item android:id="@+id/search"
           android:icon="@drawable/ic_ab_search"
           android:title="@string/menu_search"
-          app:actionViewClass="androidx.appcompat.widget.SearchView"
-          app:showAsAction="always|collapseActionView" />
+          app:showAsAction="never" />
     <item android:id="@+id/ayah_search"
           android:icon="@drawable/ic_ayah_search"
           android:title="@string/menu_ayah_search"
-          app:showAsAction="always" />
+          app:showAsAction="never" />
     <item android:id="@+id/page_theme"
           android:icon="@drawable/ic_page_theme"
           android:title="@string/prefs_page_theme_title"
