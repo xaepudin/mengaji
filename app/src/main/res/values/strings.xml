@@ -176,6 +176,36 @@
     <item quantity="other">%1$d matching ayahs</item>
   </plurals>
 
+  <!-- Collections -->
+  <string name="quran_collections">Collections</string>
+  <string name="collection_new">New collection</string>
+  <string name="collection_name_hint">Collection name</string>
+  <string name="collection_name_required">Enter a collection name</string>
+  <string name="collection_create">Create</string>
+  <string name="collection_save">Save</string>
+  <string name="collection_rename">Rename collection</string>
+  <string name="collection_delete">Delete collection</string>
+  <string name="collection_delete_message">Delete \"%1$s\" and all of its entries?</string>
+  <string name="collection_list_empty">No collections yet. Create one to group ayahs you want to revisit.</string>
+  <string name="collection_entries_empty">No entries yet. Open an ayah and choose \"Add to collection\".</string>
+  <string name="add_to_collection">Add to collection</string>
+  <string name="collection_entry_name">Entry name</string>
+  <string name="collection_entry_name_required">Enter a name for this entry</string>
+  <string name="collection_entry_add">Add</string>
+  <string name="collection_entry_rename">Rename entry</string>
+  <string name="collection_entry_delete">Delete entry</string>
+  <string name="collection_entry_delete_message">Delete \"%1$s\"?</string>
+  <string name="collection_entry_options">Entry options</string>
+  <string name="collection_reorder">Reorder entry</string>
+  <string name="collection_added">Added to \"%1$s\"</string>
+  <string name="collection_range_single">%1$s · Ayah %2$d</string>
+  <string name="collection_range_ayahs">%1$s · Ayah %2$d–%3$d</string>
+  <string name="collection_range_suras">%1$s %2$d – %3$s %4$d</string>
+  <plurals name="collection_entry_count">
+    <item quantity="one">%1$d entry</item>
+    <item quantity="other">%1$d entries</item>
+  </plurals>
+
   <!-- Quran Preference Activity -->
   <string name="appearance">App theme</string>
   <string name="prefs_volume_key_navigation_title">Volume key navigation</string>

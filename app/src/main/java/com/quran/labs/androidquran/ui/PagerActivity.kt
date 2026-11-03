@@ -110,6 +110,7 @@ import com.quran.labs.androidquran.ui.helpers.AyahSelectedListener
 import com.quran.labs.androidquran.ui.helpers.AyahTracker
 import com.quran.labs.androidquran.ui.helpers.JumpDestination
 import com.quran.labs.androidquran.ui.helpers.QuranDisplayHelper
+import com.quran.labs.androidquran.ui.collection.CollectionDialogs
 import com.quran.labs.androidquran.ui.helpers.QuranNavigator
 import com.quran.labs.androidquran.ui.helpers.QuranPage
 import com.quran.labs.androidquran.ui.helpers.QuranPageAdapter
@@ -137,6 +138,7 @@ import com.quran.mobile.di.QuranReadingPageComponentProvider
 import com.quran.mobile.feature.audiobar.AudioBarInjector
 import com.quran.mobile.feature.audiobar.AudioBarWrapper
 import com.quran.mobile.feature.audiobar.presenter.AudioBarEventRepository
+import com.quran.mobile.collection.AyahCollectionDao
 import com.quran.mobile.feature.ayahbookmark.AyahBookmarkWrapper
 import com.quran.mobile.feature.ayahbookmark.di.AyahBookmarkWrapperInjector
 import com.quran.mobile.feature.ayahbookmark.readingbookmark.ReadingBookmarkSheetWrapper
@@ -240,6 +242,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   @Inject lateinit var quranNavigator: QuranNavigator
 
   @Inject lateinit var bookmarksDao: BookmarksDao
+  @Inject lateinit var collectionDao: AyahCollectionDao
   @Inject lateinit var recentPagePresenter: RecentPagePresenter
   @Inject lateinit var readingBookmarkPresenter: ReadingBookmarkPresenter
   @Inject lateinit var quranSettings: QuranSettings
@@ -2038,6 +2041,20 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         shareAyah(startSuraAyah, endSuraAyah, false)
       } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_copy_ayah) {
         shareAyah(startSuraAyah, endSuraAyah, true)
+      } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_add_to_collection) {
+        CollectionDialogs.showAddToCollection(
+          this@PagerActivity,
+          collectionDao,
+          quranDisplayData,
+          startSuraAyah,
+          endSuraAyah
+        ) { collection ->
+          Toast.makeText(
+            this@PagerActivity,
+            getString(R.string.collection_added, collection.name),
+            Toast.LENGTH_SHORT
+          ).show()
+        }
       } else {
         return false
       }

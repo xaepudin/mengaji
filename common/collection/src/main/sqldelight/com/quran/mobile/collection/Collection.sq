@@ -1,0 +1,96 @@
+CREATE TABLE collections (
+  _id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE collection_entries (
+  _id INTEGER PRIMARY KEY AUTOINCREMENT,
+  collection_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  start_sura INTEGER NOT NULL,
+  start_ayah INTEGER NOT NULL,
+  end_sura INTEGER NOT NULL,
+  end_ayah INTEGER NOT NULL,
+  position INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX collection_entries_collection_id
+  ON collection_entries(collection_id);
+
+allCollections:
+SELECT
+  c._id AS _id,
+  c.name AS name,
+  (SELECT COUNT(*) FROM collection_entries e WHERE e.collection_id = c._id) AS entry_count
+FROM collections c
+ORDER BY c.name COLLATE NOCASE ASC;
+
+collectionById:
+SELECT
+  c._id AS _id,
+  c.name AS name,
+  (SELECT COUNT(*) FROM collection_entries e WHERE e.collection_id = c._id) AS entry_count
+FROM collections c
+WHERE c._id = ?;
+
+entriesForCollection:
+SELECT
+  _id,
+  collection_id,
+  name,
+  start_sura,
+  start_ayah,
+  end_sura,
+  end_ayah,
+  position
+FROM collection_entries
+WHERE collection_id = ?
+ORDER BY position ASC, _id ASC;
+
+insertCollection:
+INSERT INTO collections(name, created_at, updated_at)
+VALUES (?, ?, ?);
+
+renameCollection:
+UPDATE collections
+SET name = ?, updated_at = ?
+WHERE _id = ?;
+
+deleteCollection:
+DELETE FROM collections WHERE _id = ?;
+
+deleteEntriesForCollection:
+DELETE FROM collection_entries WHERE collection_id = ?;
+
+nextEntryPosition:
+SELECT COALESCE(MAX(position), -1) + 1 AS next_position
+FROM collection_entries
+WHERE collection_id = ?;
+
+insertEntry:
+INSERT INTO collection_entries(
+  collection_id,
+  name,
+  start_sura,
+  start_ayah,
+  end_sura,
+  end_ayah,
+  position,
+  created_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+renameEntry:
+UPDATE collection_entries SET name = ? WHERE _id = ?;
+
+deleteEntry:
+DELETE FROM collection_entries WHERE _id = ?;
+
+updateEntryPosition:
+UPDATE collection_entries SET position = ? WHERE _id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid() AS row_id;

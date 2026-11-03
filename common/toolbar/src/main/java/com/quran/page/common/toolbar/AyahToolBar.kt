@@ -191,7 +191,15 @@ class AyahToolBar @JvmOverloads constructor(
   // relying on getWidth() may give us the width of a shorter
   // submenu instead of the actual menu
   private val toolBarWidth: Int
-    get() = menu.size() * itemWidth
+    get() {
+      var visibleItems = 0
+      for (i in 0 until menu.size()) {
+        if (menu.getItem(i).isVisible) {
+          visibleItems++
+        }
+      }
+      return visibleItems * itemWidth
+    }
 
   fun setBookmarked(bookmarked: Boolean) {
     val bookmarkItem = menu.findItem(R.id.cab_bookmark_ayah)

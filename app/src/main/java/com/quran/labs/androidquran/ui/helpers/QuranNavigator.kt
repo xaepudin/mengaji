@@ -44,6 +44,32 @@ class QuranNavigator @Inject constructor(
     }
   }
 
+  @JvmOverloads
+  fun jumpTo(
+    start: SuraAyah,
+    end: SuraAyah,
+    showTranslation: Boolean? = null,
+    intentFlags: Int = 0
+  ) {
+    val intent = intentFor(start, end, showTranslation).addFlags(intentFlags)
+    suggestedReadingBookmark.onJump(start, null)
+    if (context is PagerActivity) {
+      context.onNewIntent(intent)
+    } else {
+      context.startActivity(intent)
+    }
+  }
+
+  fun intentFor(
+    start: SuraAyah,
+    end: SuraAyah,
+    showTranslation: Boolean? = null
+  ): Intent = intentFor(start, showTranslation).apply {
+    if (start.sura == end.sura && end.ayah > start.ayah) {
+      putExtra(PagerActivity.EXTRA_HIGHLIGHT_END_AYAH, end.ayah)
+    }
+  }
+
   fun intentFor(
     location: JumpLocation,
     showTranslation: Boolean? = null

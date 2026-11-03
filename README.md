@@ -24,6 +24,8 @@ project created by the Quran.com team and its contributors.
     long press.
   - Keep the ayah number markers visible while the text is covered.
 - **Bookmark** pages and ayahs, tag them, and keep track of your reading progress.
+- **Collections**: group ayah ranges into named collections, reorder entries, rename them, and
+  reopen an entry with its ayah range highlighted.
 - **Search** the Quran and translations.
 - **Ayah search** with Lafzi: type how an ayah sounds (for example, `bismillah`) or type it in
   Arabic, then open a matching ayah directly in the reader. The result list can show your selected

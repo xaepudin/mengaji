@@ -216,6 +216,7 @@ dependencies {
   implementation(project(":common:analytics"))
   implementation(project(":common:audio"))
   implementation(project(":common:bookmark"))
+  implementation(project(":common:collection"))
   implementation(project(":common:data"))
   implementation(project(":common:di"))
   implementation(project(":common:download"))

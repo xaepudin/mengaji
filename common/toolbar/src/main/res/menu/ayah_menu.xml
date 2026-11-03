@@ -28,4 +28,7 @@
           android:visible="false"
           android:icon="@drawable/ic_mic"
           android:title="@string/recite_from_here" />
+    <item android:id="@+id/cab_add_to_collection"
+          android:icon="@drawable/ic_add_to_collection"
+          android:title="@string/add_to_collection" />
 </menu>

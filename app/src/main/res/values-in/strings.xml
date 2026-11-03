@@ -124,6 +124,36 @@
     <item quantity="other">%1$d ayat ditemukan</item>
   </plurals>
 
+  <!-- Collections -->
+  <string name="quran_collections">Koleksi</string>
+  <string name="collection_new">Koleksi baru</string>
+  <string name="collection_name_hint">Nama koleksi</string>
+  <string name="collection_name_required">Masukkan nama koleksi</string>
+  <string name="collection_create">Buat</string>
+  <string name="collection_save">Simpan</string>
+  <string name="collection_rename">Ganti nama koleksi</string>
+  <string name="collection_delete">Hapus koleksi</string>
+  <string name="collection_delete_message">Hapus \"%1$s\" beserta semua entrinya?</string>
+  <string name="collection_list_empty">Belum ada koleksi. Buat koleksi untuk mengelompokkan ayat yang ingin Anda buka lagi.</string>
+  <string name="collection_entries_empty">Belum ada entri. Buka sebuah ayat dan pilih \"Tambahkan ke koleksi\".</string>
+  <string name="add_to_collection">Tambahkan ke koleksi</string>
+  <string name="collection_entry_name">Nama entri</string>
+  <string name="collection_entry_name_required">Masukkan nama untuk entri ini</string>
+  <string name="collection_entry_add">Tambah</string>
+  <string name="collection_entry_rename">Ganti nama entri</string>
+  <string name="collection_entry_delete">Hapus entri</string>
+  <string name="collection_entry_delete_message">Hapus \"%1$s\"?</string>
+  <string name="collection_entry_options">Opsi entri</string>
+  <string name="collection_reorder">Urutkan entri</string>
+  <string name="collection_added">Ditambahkan ke \"%1$s\"</string>
+  <string name="collection_range_single">%1$s · Ayat %2$d</string>
+  <string name="collection_range_ayahs">%1$s · Ayat %2$d–%3$d</string>
+  <string name="collection_range_suras">%1$s %2$d – %3$s %4$d</string>
+  <plurals name="collection_entry_count">
+    <item quantity="one">%1$d entri</item>
+    <item quantity="other">%1$d entri</item>
+  </plurals>
+
   <!-- Quran Preference Activity -->
   <string name="appearance">Tampilan</string>
   <string name="prefs_volume_key_navigation_title">Navigasi tombol volume</string>
