@@ -58,6 +58,16 @@ class QuranRowFactory @Inject constructor(
       .build()
   }
 
+  fun fromReadingBookmarkHeader(context: Context, count: Int, isCollapsed: Boolean): QuranRow {
+    return QuranRow.Builder()
+      .withText(
+        context.resources.getQuantityString(R.plurals.plural_reading_bookmarks, count)
+      )
+      .withType(QuranRow.READING_BOOKMARKS_HEADER)
+      .withCollapsedState(isCollapsed)
+      .build()
+  }
+
   fun fromCurrentPage(context: Context, page: Int, timeStamp: Long): QuranRow {
     return QuranRow.Builder()
       .withText(quranDisplayData.getAllSuraNamesForPageString(context, page))

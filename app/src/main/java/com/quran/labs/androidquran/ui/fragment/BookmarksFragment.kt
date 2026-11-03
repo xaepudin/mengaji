@@ -499,6 +499,10 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
         bookmarkPresenter.toggleHighlightsCollapsed()
       }
 
+      row.isReadingBookmarksHeader && row.isCollapsible -> {
+        bookmarkPresenter.toggleReadingBookmarksCollapsed()
+      }
+
       row.isRecentHeader && row.isCollapsible -> {
         bookmarkPresenter.toggleShowRecents()
       }

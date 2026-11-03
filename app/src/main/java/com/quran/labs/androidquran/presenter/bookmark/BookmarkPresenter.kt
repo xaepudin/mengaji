@@ -71,6 +71,7 @@ open class BookmarkPresenter @Inject internal constructor(
   private var collapsedCollections: Set<String> = quranSettings.collapsedCollections
 
   private var isHighlightsCollapsed: Boolean = quranSettings.isHighlightsCollapsed(true)
+  private var isReadingBookmarksCollapsed: Boolean = quranSettings.areReadingBookmarksCollapsed()
 
   private var cachedData: BookmarkRawResult? = null
   private var fragment: BookmarksFragment? = null
@@ -172,6 +173,12 @@ open class BookmarkPresenter @Inject internal constructor(
       collapsedCollections + collectionId
     }
     quranSettings.collapsedCollections = collapsedCollections
+    requestData(false)
+  }
+
+  fun toggleReadingBookmarksCollapsed() {
+    isReadingBookmarksCollapsed = !isReadingBookmarksCollapsed
+    quranSettings.setReadingBookmarksCollapsed(isReadingBookmarksCollapsed)
     requestData(false)
   }
 
@@ -551,9 +558,12 @@ open class BookmarkPresenter @Inject internal constructor(
       .filterNot { readingBookmark -> readingBookmark is EmptyReadingBookmark }
       .sortedBy { readingBookmark -> readingBookmark.slot }
     if (placedReadingBookmarks.isNotEmpty()) {
-      rows.add(ReadingBookmarkHeader(placedReadingBookmarks.size))
-      placedReadingBookmarks.forEach { readingBookmark ->
-        rows.add(ReadingBookmarkItem(readingBookmark))
+      val isCollapsed = isReadingBookmarksCollapsed
+      rows.add(ReadingBookmarkHeader(placedReadingBookmarks.size, isCollapsed))
+      if (!isCollapsed) {
+        placedReadingBookmarks.forEach { readingBookmark ->
+          rows.add(ReadingBookmarkItem(readingBookmark))
+        }
       }
     }
 

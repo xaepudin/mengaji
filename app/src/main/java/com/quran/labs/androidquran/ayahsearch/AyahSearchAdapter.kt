@@ -4,9 +4,7 @@ import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
-import android.text.Spanned
 import android.text.style.BackgroundColorSpan
-import android.text.style.RelativeSizeSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -141,18 +139,7 @@ class AyahSearchAdapter(
         builder.append(" ")
       }
       builder.append(result.arabicText.trim().replace('\n', ' '))
-      builder.append(" ")
-      val markerStart = builder.length
-      builder.append("﴿")
-      builder.append(arabicNumber(result.ayah))
-      builder.append("﴾")
-      builder.setSpan(
-        RelativeSizeSpan(0.6f),
-        markerStart,
-        builder.length,
-        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-      )
-      builder.append(" ")
+      builder.append("  ·  ")
     }
     holder.arabic.typeface = quranTypeface
     holder.arabic.text = builder
@@ -164,7 +151,7 @@ class AyahSearchAdapter(
       for (result in results) {
         val translation = result.translation ?: continue
         if (translations.isNotEmpty()) {
-          translations.append(" · ")
+          translations.append(" ")
         }
         translations.append("(${result.sura}:${result.ayah}) ")
         translations.append(
@@ -246,16 +233,6 @@ class AyahSearchAdapter(
           groupHeaders[index]?.let { header -> add(Row.GroupHeader(header)) }
           add(Row.Result(result))
         }
-      }
-    }
-  }
-
-  private fun arabicNumber(number: Int): String = buildString {
-    for (character in number.toString()) {
-      if (character in '0'..'9') {
-        append(('٠'.code + (character - '0')).toChar())
-      } else {
-        append(character)
       }
     }
   }
