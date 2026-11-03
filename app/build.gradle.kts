@@ -36,8 +36,8 @@ android {
   namespace = "com.quran.labs.androidquran"
 
   defaultConfig {
-    versionCode = (project.findProperty("VERSION_CODE") as String?)?.toIntOrNull() ?: 3650
-    versionName = (project.findProperty("VERSION_NAME") as String?) ?: "3.6.5"
+    versionCode = (project.findProperty("VERSION_CODE") as String?)?.toIntOrNull() ?: 3700
+    versionName = (project.findProperty("VERSION_NAME") as String?) ?: "3.7.0"
     testInstrumentationRunner = "com.quran.labs.androidquran.core.QuranTestRunner"
   }
 
