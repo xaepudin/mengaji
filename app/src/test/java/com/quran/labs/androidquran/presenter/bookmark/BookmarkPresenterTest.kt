@@ -113,6 +113,19 @@ class BookmarkPresenterTest {
   }
 
   @Test
+  fun `recent pages collapse to just their header`() {
+    fakeRecentPagesDao.setRecentPages(RECENT_PAGES)
+    val presenter = makeBookmarkPresenter()
+
+    presenter.toggleShowRecents()
+    val result = getBookmarkResultByDateAndValidate(presenter)
+
+    assertThat(result.rows.filterIsInstance<BookmarkRowData.RecentPageHeader>())
+      .containsExactly(BookmarkRowData.RecentPageHeader(RECENT_PAGES.size, isCollapsed = true))
+    assertThat(result.rows.filterIsInstance<BookmarkRowData.RecentPage>()).isEmpty()
+  }
+
+  @Test
   fun `renders reading bookmark ahead of recent pages`() {
     val readingBookmark = PageReadingBookmark(ReadingBookmarkType.ORANGE, 42, Instant.fromEpochSeconds(300))
     fakeBookmarksDao.setBookmarks(AYAH_BOOKMARKS)

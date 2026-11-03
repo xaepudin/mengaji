@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.QuranDataActivity
-import com.quran.data.core.QuranInfo
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.presenter.data.ReaderReadinessTracker
@@ -41,7 +40,6 @@ import kotlinx.coroutines.launch
 class CollectionDetailActivity : AppCompatActivity() {
 
   @Inject lateinit var collectionDao: AyahCollectionDao
-  @Inject lateinit var quranInfo: QuranInfo
   @Inject lateinit var quranDisplayData: QuranDisplayData
   @Inject lateinit var quranNavigatorFactory: QuranNavigator.Factory
   @Inject lateinit var quranSettings: QuranSettings
@@ -75,7 +73,6 @@ class CollectionDetailActivity : AppCompatActivity() {
     entriesList = findViewById(R.id.entries_list)
     emptyView = findViewById(R.id.empty_entries)
     adapter = CollectionEntriesAdapter(
-      quranInfo = quranInfo,
       quranDisplayData = quranDisplayData,
       onClick = ::openEntry,
       onRename = { entry ->

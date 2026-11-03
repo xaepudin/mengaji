@@ -25,7 +25,7 @@ class AyahSearchAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
   private val items = ArrayList<AyahSearchResult>()
-  private var dividerBefore: List<Boolean> = emptyList()
+  private var groupHeaders: Map<Int, AyahGroupHeader> = emptyMap()
   private var rows: List<Row> = emptyList()
   private val highlightColor =
     ContextCompat.getColor(context, R.color.ayah_search_highlight)
@@ -39,19 +39,13 @@ class AyahSearchAdapter(
       }
     }
 
-  var showEntryDividers: Boolean = false
-    set(value) {
-      if (field != value) {
-        field = value
-        rebuildRows()
-        notifyDataSetChanged()
-      }
-    }
-
-  fun submitItems(results: List<AyahSearchResult>, dividerBefore: List<Boolean> = emptyList()) {
+  fun submitItems(
+    results: List<AyahSearchResult>,
+    groupHeaders: Map<Int, AyahGroupHeader> = emptyMap()
+  ) {
     items.clear()
     items.addAll(results)
-    this.dividerBefore = dividerBefore
+    this.groupHeaders = groupHeaders
     rebuildRows()
     notifyDataSetChanged()
   }
@@ -61,7 +55,7 @@ class AyahSearchAdapter(
       return
     }
     items.clear()
-    dividerBefore = emptyList()
+    groupHeaders = emptyMap()
     rows = emptyList()
     notifyDataSetChanged()
   }
@@ -69,22 +63,38 @@ class AyahSearchAdapter(
   override fun getItemCount(): Int = rows.size
 
   override fun getItemViewType(position: Int): Int {
-    return if (rows[position] is Row.Divider) TYPE_DIVIDER else TYPE_RESULT
+    return when (rows[position]) {
+      is Row.GroupHeader -> TYPE_GROUP_HEADER
+      is Row.Result -> TYPE_RESULT
+    }
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
     val inflater = LayoutInflater.from(context)
-    return if (viewType == TYPE_DIVIDER) {
-      DividerViewHolder(inflater.inflate(R.layout.item_collection_reading_divider, parent, false))
-    } else {
-      ViewHolder(inflater.inflate(R.layout.item_ayah_search_result, parent, false))
+    return when (viewType) {
+      TYPE_GROUP_HEADER ->
+        GroupHeaderViewHolder(
+          inflater.inflate(R.layout.item_collection_reading_group_header, parent, false)
+        )
+
+      else -> ViewHolder(inflater.inflate(R.layout.item_ayah_search_result, parent, false))
     }
   }
 
   override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-    val row = rows[position]
-    if (row is Row.Result && holder is ViewHolder) {
-      bindResult(holder, row.result)
+    when (val row = rows[position]) {
+      is Row.Result -> if (holder is ViewHolder) bindResult(holder, row.result)
+      is Row.GroupHeader -> if (holder is GroupHeaderViewHolder) bindGroupHeader(holder, row.header)
+    }
+  }
+
+  private fun bindGroupHeader(holder: GroupHeaderViewHolder, header: AyahGroupHeader) {
+    holder.name.text = header.name
+    if (header.name == header.range) {
+      holder.range.visibility = View.GONE
+    } else {
+      holder.range.visibility = View.VISIBLE
+      holder.range.text = header.range
     }
   }
 
@@ -127,9 +137,7 @@ class AyahSearchAdapter(
   private fun rebuildRows() {
     rows = buildList {
       items.forEachIndexed { index, result ->
-        if (showEntryDividers && dividerBefore.getOrElse(index) { false }) {
-          add(Row.Divider)
-        }
+        groupHeaders[index]?.let { header -> add(Row.GroupHeader(header)) }
         add(Row.Result(result))
       }
     }
@@ -158,7 +166,10 @@ class AyahSearchAdapter(
     return spannable
   }
 
-  private class DividerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+  private class GroupHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val name: TextView = itemView.findViewById(R.id.reading_group_name)
+    val range: TextView = itemView.findViewById(R.id.reading_group_range)
+  }
 
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val metadata: TextView = itemView.findViewById(R.id.result_metadata)
@@ -168,11 +179,11 @@ class AyahSearchAdapter(
 
   private sealed interface Row {
     data class Result(val result: AyahSearchResult) : Row
-    data object Divider : Row
+    data class GroupHeader(val header: AyahGroupHeader) : Row
   }
 
   private companion object {
     const val TYPE_RESULT = 0
-    const val TYPE_DIVIDER = 1
+    const val TYPE_GROUP_HEADER = 1
   }
 }

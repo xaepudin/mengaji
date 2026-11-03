@@ -38,6 +38,7 @@ import com.quran.labs.androidquran.ui.helpers.BookmarkUIConverter
 import com.quran.labs.androidquran.ui.helpers.QuranListAdapter
 import com.quran.labs.androidquran.ui.helpers.QuranListAdapter.QuranTouchListener
 import com.quran.labs.androidquran.ui.helpers.QuranRow
+import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.mobile.feature.sync.BookmarksSignInCard
 import com.quran.mobile.feature.sync.QuranSyncActivity
 import com.quran.mobile.feature.sync.QuranSyncManager
@@ -53,6 +54,7 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
   private var baseRows: Array<QuranRow> = emptyArray()
   private var tagMap: Map<String, com.quran.data.model.bookmark.Tag> = emptyMap()
   private var collections: List<AyahCollection> = emptyList()
+  private var collectionsCollapsed = false
   private var emptyStateView: ComposeView? = null
 
   @Inject
@@ -69,6 +71,9 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
 
   @Inject
   lateinit var collectionDao: AyahCollectionDao
+
+  @Inject
+  lateinit var quranSettings: QuranSettings
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
@@ -145,6 +150,7 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+    collectionsCollapsed = quranSettings.areCollectionsCollapsed()
 
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -291,6 +297,10 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
     }
   }
 
+  override fun onCreateCollection() {
+    CollectionDialogs.showCreateCollection(requireActivity(), collectionDao)
+  }
+
   override fun onClick(row: QuranRow, position: Int) {
     val bookmarksAdapter = bookmarksAdapter
     val bookmarksContextualModePresenter = bookmarksContextualModePresenter
@@ -303,7 +313,9 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
         bookmarksAdapter.setItemChecked(position, false)
         when {
           row.isCollectionsHeader -> {
-            CollectionDialogs.showCreateCollection(requireActivity(), collectionDao)
+            collectionsCollapsed = !collectionsCollapsed
+            quranSettings.setCollectionsCollapsed(collectionsCollapsed)
+            rebuildRows()
             return
           }
 
@@ -482,6 +494,10 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
 
       row.isHighlightsHeader -> {
         bookmarkPresenter.toggleHighlightsCollapsed()
+      }
+
+      row.isRecentHeader && row.isCollapsible -> {
+        bookmarkPresenter.toggleShowRecents()
       }
 
       row.isHighlightColor -> {

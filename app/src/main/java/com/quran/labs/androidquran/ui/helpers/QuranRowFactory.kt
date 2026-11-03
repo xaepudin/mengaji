@@ -26,12 +26,14 @@ class QuranRowFactory @Inject constructor(
   private val quranInfo: QuranInfo,
   private val quranDisplayData: QuranDisplayData
 ) {
-  fun fromRecentPageHeader(context: Context, count: Int): QuranRow {
+  fun fromRecentPageHeader(context: Context, count: Int, isCollapsed: Boolean): QuranRow {
     return QuranRow.Builder()
       .withText(
         context.resources.getQuantityString(R.plurals.plural_recent_pages, count)
       )
-      .withType(QuranRow.HEADER)
+      .withType(QuranRow.RECENTS_HEADER)
+      .withItemCount(count)
+      .withCollapsedState(isCollapsed)
       .build()
   }
 

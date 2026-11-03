@@ -23,6 +23,7 @@ import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.QuranDataActivity
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.ayahsearch.AyahSearchAdapter
+import com.quran.labs.androidquran.ayahsearch.AyahGroupHeader
 import com.quran.labs.androidquran.ayahsearch.AyahSearchResult
 import com.quran.labs.androidquran.ayahsearch.AyahSearchTranslationRepository
 import com.quran.labs.androidquran.ayahsearch.LafziSearchRepository
@@ -63,7 +64,6 @@ class CollectionReadingActivity : AppCompatActivity() {
   private lateinit var emptyView: View
   private var collectionId: Long = -1
   private var showTranslation = true
-  private var showEntryDividers = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
@@ -77,6 +77,8 @@ class CollectionReadingActivity : AppCompatActivity() {
       finish()
       return
     }
+
+    showTranslation = quranSettings.isCollectionReadingShowTranslation()
 
     val toolbar = findViewById<Toolbar>(R.id.toolbar)
     setSupportActionBar(toolbar)
@@ -93,7 +95,6 @@ class CollectionReadingActivity : AppCompatActivity() {
       onResultClick = ::openAyah
     )
     adapter.showTranslation = showTranslation
-    adapter.showEntryDividers = showEntryDividers
     readingList.layoutManager = LinearLayoutManager(this)
     readingList.adapter = adapter
 
@@ -132,13 +133,6 @@ class CollectionReadingActivity : AppCompatActivity() {
         R.string.collection_reading_show_translation
       }
     )
-    menu.findItem(R.id.action_toggle_dividers)?.title = getString(
-      if (showEntryDividers) {
-        R.string.collection_reading_hide_dividers
-      } else {
-        R.string.collection_reading_show_dividers
-      }
-    )
     return super.onPrepareOptionsMenu(menu)
   }
 
@@ -151,17 +145,12 @@ class CollectionReadingActivity : AppCompatActivity() {
 
       R.id.action_toggle_translation -> {
         showTranslation = !showTranslation
+        quranSettings.setCollectionReadingShowTranslation(showTranslation)
         adapter.showTranslation = showTranslation
         invalidateOptionsMenu()
         return true
       }
 
-      R.id.action_toggle_dividers -> {
-        showEntryDividers = !showEntryDividers
-        adapter.showEntryDividers = showEntryDividers
-        invalidateOptionsMenu()
-        return true
-      }
     }
     return super.onOptionsItemSelected(item)
   }
@@ -186,11 +175,23 @@ class CollectionReadingActivity : AppCompatActivity() {
             translationRepository.translationsFor(ids)
           }
           val results = ArrayList<AyahSearchResult>(texts.size)
-          val dividers = ArrayList<Boolean>(texts.size)
+          val groupHeaders = HashMap<Int, AyahGroupHeader>()
           var previousEntry = -1
           for (text in texts) {
             val entryIndex = ayahEntries[text.ayahId] ?: -1
-            dividers += previousEntry != -1 && entryIndex != previousEntry
+            if (entryIndex != previousEntry) {
+              entries.getOrNull(entryIndex)?.let { entry ->
+                groupHeaders[results.size] = AyahGroupHeader(
+                  name = entry.name,
+                  range = collectionRangeLabel(
+                    this@CollectionReadingActivity,
+                    quranDisplayData,
+                    entry.start,
+                    entry.end
+                  )
+                )
+              }
+            }
             previousEntry = entryIndex
             results += AyahSearchResult(
               ayahId = text.ayahId,
@@ -202,7 +203,7 @@ class CollectionReadingActivity : AppCompatActivity() {
               translation = translations[text.ayahId]
             )
           }
-          CollectionReadingData(collection, results, dividers)
+          CollectionReadingData(collection, results, groupHeaders)
         }
       } catch (exception: Exception) {
         Timber.e(exception, "Unable to load collection reading data")
@@ -219,7 +220,7 @@ class CollectionReadingActivity : AppCompatActivity() {
       if (loaded.results.isEmpty()) {
         emptyView.visibility = View.VISIBLE
       } else {
-        adapter.submitItems(loaded.results, loaded.dividers)
+        adapter.submitItems(loaded.results, loaded.groupHeaders)
       }
     }
   }
@@ -259,7 +260,7 @@ class CollectionReadingActivity : AppCompatActivity() {
   private data class CollectionReadingData(
     val collection: AyahCollection,
     val results: List<AyahSearchResult>,
-    val dividers: List<Boolean>
+    val groupHeaders: Map<Int, AyahGroupHeader>
   )
 
   private fun openAyah(result: AyahSearchResult) {

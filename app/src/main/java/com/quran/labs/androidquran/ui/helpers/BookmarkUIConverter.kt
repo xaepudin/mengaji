@@ -22,7 +22,7 @@ class BookmarkUIConverter @Inject constructor(
           quranRowFactory.fromReadingBookmark(context, rowData.readingBookmark)
 
         is BookmarkRowData.RecentPageHeader ->
-          quranRowFactory.fromRecentPageHeader(context, rowData.count)
+          quranRowFactory.fromRecentPageHeader(context, rowData.count, rowData.isCollapsed)
 
         is BookmarkRowData.RecentPage -> {
           val page = if (quranInfo.isValidPage(rowData.recentPage.page)) {

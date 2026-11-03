@@ -22,6 +22,7 @@ public class QuranRow {
   public static final int HIGHLIGHTS_HEADER = 9;
   public static final int COLLECTIONS_HEADER = 10;
   public static final int COLLECTION = 11;
+  public static final int RECENTS_HEADER = 12;
 
   public int sura;
   public int ayah;
@@ -231,6 +232,10 @@ public class QuranRow {
 
   public boolean isCollectionsHeader() {
     return rowType == COLLECTIONS_HEADER;
+  }
+
+  public boolean isRecentHeader() {
+    return rowType == RECENTS_HEADER;
   }
 
   public boolean isCollection() {

@@ -88,7 +88,8 @@ class QuranListAdapter(
     return when {
       element.isCollectionsHeader -> VIEW_TYPE_COLLECTIONS_HEADER
       element.isCollection -> VIEW_TYPE_COLLECTION
-      element.isBookmarkHeader || element.isHighlightsHeader -> VIEW_TYPE_COLLECTION_HEADER
+      element.isRecentHeader || element.isBookmarkHeader || element.isHighlightsHeader ->
+        VIEW_TYPE_COLLECTION_HEADER
       element.isHeader -> VIEW_TYPE_HEADER
       element.isHighlightColor -> VIEW_TYPE_HIGHLIGHT_COLOR
       else -> VIEW_TYPE_ROW
@@ -252,8 +253,14 @@ class QuranListAdapter(
 
   private fun bindCollectionsHeader(holder: CollectionsHeaderHolder, pos: Int) {
     val element = elements[pos]
+    holder.expand.setImageResource(
+      if (element.isCollapsed) R.drawable.ic_expand_more_24 else R.drawable.ic_expand_less_24
+    )
+    holder.expand.contentDescription = context.getString(
+      if (element.isCollapsed) R.string.expand_collection else R.string.collapse_collection
+    )
     holder.itemView.setOnClickListener { touchListener?.onClick(element, pos) }
-    holder.add.setOnClickListener { touchListener?.onClick(element, pos) }
+    holder.add.setOnClickListener { touchListener?.onCreateCollection() }
   }
 
   private fun bindCollection(holder: CollectionHolder, pos: Int) {
@@ -331,6 +338,8 @@ class QuranListAdapter(
         selected.isHighlightsHeader ||        // the collapsible highlights header
         selected.isHighlightColor ||          // the five highlight colors
         selected.isHighlightedAyah ||         // a highlighted ayah inside a color's screen
+        selected.isRecentHeader ||             // the collapsible recent pages header
+        selected.isCollectionsHeader ||        // the collapsible collections header
         selected.isBookmarkHeader             // tags
   }
 
@@ -376,6 +385,7 @@ class QuranListAdapter(
 
   private inner class CollectionsHeaderHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val add: View = itemView.findViewById(R.id.collections_header_add)
+    val expand: ImageView = itemView.findViewById(R.id.collections_header_expand)
   }
 
   private inner class CollectionHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -391,6 +401,7 @@ class QuranListAdapter(
     fun onClick(row: QuranRow, position: Int)
     fun onLongClick(row: QuranRow, position: Int): Boolean
     fun onOpenClicked(row: QuranRow, position: Int) = Unit
+    fun onCreateCollection() = Unit
   }
 
   private companion object {

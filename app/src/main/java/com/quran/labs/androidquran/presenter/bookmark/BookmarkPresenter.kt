@@ -559,10 +559,12 @@ open class BookmarkPresenter @Inject internal constructor(
 
     val recentPages = data.recentPages
     if (recentPages.isNotEmpty()) {
-      val size = if (isShowingRecents) recentPages.size else 1
-      rows.add(RecentPageHeader(size))
-      for (i in 0 until size) {
-        rows.add(BookmarkRowData.RecentPage(recentPages[i]))
+      val isCollapsed = !isShowingRecents
+      rows.add(RecentPageHeader(recentPages.size, isCollapsed))
+      if (!isCollapsed) {
+        recentPages.forEach { recentPage ->
+          rows.add(BookmarkRowData.RecentPage(recentPage))
+        }
       }
     }
 

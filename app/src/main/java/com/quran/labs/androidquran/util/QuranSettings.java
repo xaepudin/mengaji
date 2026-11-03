@@ -31,6 +31,9 @@ public class QuranSettings implements PageThemeSettings {
   private static final String PREF_AYAH_SEARCH_VOCAL = "ayah_search_vocal";
   private static final String PREF_AYAH_SEARCH_SHOW_TRANSLATION = "ayah_search_show_translation";
   private static final String PREF_KEEP_NAVIGATION_BAR = "keepNavigationBarVisible";
+  private static final String PREF_COLLECTION_READING_SHOW_TRANSLATION =
+      "collection_reading_show_translation";
+  private static final String PREF_COLLECTIONS_COLLAPSED = "collections_collapsed";
 
   private static QuranSettings instance;
 
@@ -102,6 +105,22 @@ public class QuranSettings implements PageThemeSettings {
 
   public void setAyahSearchShowTranslation(boolean showTranslation) {
     prefs.edit().putBoolean(PREF_AYAH_SEARCH_SHOW_TRANSLATION, showTranslation).apply();
+  }
+
+  public boolean isCollectionReadingShowTranslation() {
+    return prefs.getBoolean(PREF_COLLECTION_READING_SHOW_TRANSLATION, true);
+  }
+
+  public void setCollectionReadingShowTranslation(boolean showTranslation) {
+    prefs.edit().putBoolean(PREF_COLLECTION_READING_SHOW_TRANSLATION, showTranslation).apply();
+  }
+
+  public boolean areCollectionsCollapsed() {
+    return prefs.getBoolean(PREF_COLLECTIONS_COLLAPSED, false);
+  }
+
+  public void setCollectionsCollapsed(boolean collapsed) {
+    prefs.edit().putBoolean(PREF_COLLECTIONS_COLLAPSED, collapsed).apply();
   }
 
   @Override

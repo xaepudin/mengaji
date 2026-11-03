@@ -47,7 +47,6 @@ class CollectionLayoutTest {
   fun `inflates an entry row and the reading screen`() {
     val row = inflater.inflate(R.layout.item_collection_entry, null)
     assertThat(row.findViewById<View>(R.id.entry_number)).isNotNull()
-    assertThat(row.findViewById<View>(R.id.entry_page)).isNotNull()
 
     val reading = inflater.inflate(R.layout.activity_collection_reading, null)
     assertThat(reading.findViewById<View>(R.id.reading_list)).isNotNull()
