@@ -18,7 +18,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -35,8 +34,6 @@ import com.quran.labs.androidquran.ui.BookmarkListActivity
 import com.quran.labs.androidquran.ui.QuranActivity
 import com.quran.labs.androidquran.ui.collection.CollectionDetailActivity
 import com.quran.labs.androidquran.ui.collection.CollectionDialogs
-import com.quran.labs.androidquran.ui.collection.CollectionsAdapter
-import com.quran.labs.androidquran.ui.collection.CollectionsHeaderAdapter
 import com.quran.labs.androidquran.ui.helpers.BookmarkUIConverter
 import com.quran.labs.androidquran.ui.helpers.QuranListAdapter
 import com.quran.labs.androidquran.ui.helpers.QuranListAdapter.QuranTouchListener
@@ -53,7 +50,9 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
   private var bookmarksSwipeRefresh: SwipeRefreshLayout? = null
   private var recyclerView: RecyclerView? = null
   private var bookmarksAdapter: QuranListAdapter? = null
-  private var collectionsAdapter: CollectionsAdapter? = null
+  private var baseRows: Array<QuranRow> = emptyArray()
+  private var tagMap: Map<String, com.quran.data.model.bookmark.Tag> = emptyMap()
+  private var collections: List<AyahCollection> = emptyList()
   private var emptyStateView: ComposeView? = null
 
   @Inject
@@ -108,19 +107,7 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
     bookmarksAdapter.setQuranTouchListener(this)
     this.bookmarksAdapter = bookmarksAdapter
 
-    val collectionsHeaderAdapter = CollectionsHeaderAdapter {
-      CollectionDialogs.showCreateCollection(requireActivity(), collectionDao)
-    }
-    val collectionsAdapter = CollectionsAdapter(
-      onClick = { collection ->
-        startActivity(CollectionDetailActivity.intent(requireContext(), collection.id))
-      },
-      onLongClick = ::showCollectionOptions
-    )
-    this.collectionsAdapter = collectionsAdapter
-    recyclerView.setAdapter(
-      ConcatAdapter(collectionsHeaderAdapter, collectionsAdapter, bookmarksAdapter)
-    )
+    recyclerView.setAdapter(bookmarksAdapter)
 
     val emptyStateView = view.findViewById<ComposeView>(R.id.bookmarks_empty_state)
     emptyStateView.setContent {
@@ -162,7 +149,8 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
         collectionDao.collectionsFlow().collect { collections ->
-          collectionsAdapter?.submitList(collections)
+          this@BookmarksFragment.collections = collections
+          rebuildRows()
         }
       }
     }
@@ -189,7 +177,6 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
     bookmarksSwipeRefresh = null
     recyclerView = null
     bookmarksAdapter = null
-    collectionsAdapter = null
     emptyStateView = null
     super.onDestroyView()
   }
@@ -294,8 +281,9 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
           row.rowType == QuranRow.HIGHLIGHTED_AYAH ||
           (row.rowType == QuranRow.HEADER && row.text == ayahsHeader)
       }
-      bookmarksAdapter.setElements(rows.toTypedArray<QuranRow>(), items.tagMap)
-      bookmarksAdapter.notifyDataSetChanged()
+      baseRows = rows.toTypedArray()
+      tagMap = items.tagMap
+      rebuildRows()
 
       // The collections section is always present, so the old full-screen empty state would
       // cover it. Its composable is kept, but the list itself handles the empty case.
@@ -313,7 +301,19 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
         bookmarksContextualModePresenter.invalidateActionMode(false)
       } else {
         bookmarksAdapter.setItemChecked(position, false)
-        handleRowClicked(activity, row)
+        when {
+          row.isCollectionsHeader -> {
+            CollectionDialogs.showCreateCollection(requireActivity(), collectionDao)
+            return
+          }
+
+          row.isCollection -> {
+            startActivity(CollectionDetailActivity.intent(requireContext(), row.collectionId))
+            return
+          }
+
+          else -> handleRowClicked(activity, row)
+        }
       }
     }
   }
@@ -334,6 +334,12 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
   }
 
   override fun onLongClick(row: QuranRow, position: Int): Boolean {
+    if (row.isCollection) {
+      showCollectionOptions(
+        AyahCollection(row.collectionId, row.text, row.itemCount ?: 0)
+      )
+      return true
+    }
     if (isValidSelection(row)) {
       val bookmarksAdapter = bookmarksAdapter
       val bookmarksContextualModePresenter = bookmarksContextualModePresenter
@@ -350,6 +356,31 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
       }
     }
     return false
+  }
+
+  private fun rebuildRows() {
+    val adapter = bookmarksAdapter ?: return
+    val merged = baseRows.toMutableList()
+    val highlightIndex = merged.indexOfFirst { it.rowType == QuranRow.HIGHLIGHTS_HEADER }
+    val insertAt = if (highlightIndex >= 0) highlightIndex else merged.size
+    merged.add(
+      insertAt,
+      QuranRow.Builder()
+        .withType(QuranRow.COLLECTIONS_HEADER)
+        .withText(getString(R.string.quran_collections))
+        .build()
+    )
+    val collectionRows = collections.map { collection ->
+      QuranRow.Builder()
+        .withType(QuranRow.COLLECTION)
+        .withText(collection.name)
+        .withItemCount(collection.entryCount)
+        .withCollectionId(collection.id)
+        .build()
+    }
+    merged.addAll(insertAt + 1, collectionRows)
+    adapter.setElements(merged.toTypedArray(), tagMap)
+    adapter.notifyDataSetChanged()
   }
 
   private fun showCollectionOptions(collection: AyahCollection) {

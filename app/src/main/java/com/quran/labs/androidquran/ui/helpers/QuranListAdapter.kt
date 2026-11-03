@@ -28,7 +28,7 @@ class QuranListAdapter(
   private val recyclerView: RecyclerView,
   private var elements: Array<QuranRow>,
   private val isEditable: Boolean
-) : RecyclerView.Adapter<QuranListAdapter.HeaderHolder>(),
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
   View.OnClickListener, View.OnLongClickListener {
 
   private val inflater = LayoutInflater.from(context)
@@ -42,7 +42,7 @@ class QuranListAdapter(
 
   private var touchListener: QuranTouchListener? = null
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeaderHolder {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
     return when (viewType) {
       VIEW_TYPE_HEADER ->
         HeaderHolder(inflater.inflate(R.layout.index_header_row, parent, false))
@@ -57,19 +57,25 @@ class QuranListAdapter(
           inflater.inflate(R.layout.index_highlight_color_row, parent, false)
         )
 
+      VIEW_TYPE_COLLECTIONS_HEADER ->
+        CollectionsHeaderHolder(inflater.inflate(R.layout.item_collections_header, parent, false))
+
+      VIEW_TYPE_COLLECTION ->
+        CollectionHolder(inflater.inflate(R.layout.item_collection, parent, false))
+
       else -> ViewHolder(inflater.inflate(R.layout.index_sura_row, parent, false))
     }
   }
 
-  override fun onBindViewHolder(holder: HeaderHolder, position: Int) {
-    // Keep the adapter-local position on the row. This adapter can be nested in a
-    // ConcatAdapter, where getChildAdapterPosition would otherwise be the global position.
+  override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
     holder.itemView.tag = position
     when (getItemViewType(position)) {
-      VIEW_TYPE_HEADER -> bindHeader(holder, position)
+      VIEW_TYPE_HEADER -> bindHeader(holder as HeaderHolder, position)
       VIEW_TYPE_COLLECTION_HEADER -> bindCollectionHeader(holder as CollectionHeaderHolder, position)
       VIEW_TYPE_HIGHLIGHT_COLOR -> bindHighlightColor(holder as HighlightColorHolder, position)
-      else -> bindRow(holder, position)
+      VIEW_TYPE_COLLECTIONS_HEADER -> bindCollectionsHeader(holder as CollectionsHeaderHolder, position)
+      VIEW_TYPE_COLLECTION -> bindCollection(holder as CollectionHolder, position)
+      else -> bindRow(holder as HeaderHolder, position)
     }
   }
 
@@ -80,6 +86,8 @@ class QuranListAdapter(
   override fun getItemViewType(position: Int): Int {
     val element = elements[position]
     return when {
+      element.isCollectionsHeader -> VIEW_TYPE_COLLECTIONS_HEADER
+      element.isCollection -> VIEW_TYPE_COLLECTION
       element.isBookmarkHeader || element.isHighlightsHeader -> VIEW_TYPE_COLLECTION_HEADER
       element.isHeader -> VIEW_TYPE_HEADER
       element.isHighlightColor -> VIEW_TYPE_HIGHLIGHT_COLOR
@@ -242,6 +250,25 @@ class QuranListAdapter(
     holder.setEnabled(isEnabled(pos))
   }
 
+  private fun bindCollectionsHeader(holder: CollectionsHeaderHolder, pos: Int) {
+    val element = elements[pos]
+    holder.itemView.setOnClickListener { touchListener?.onClick(element, pos) }
+    holder.add.setOnClickListener { touchListener?.onClick(element, pos) }
+  }
+
+  private fun bindCollection(holder: CollectionHolder, pos: Int) {
+    val element = elements[pos]
+    holder.name.text = element.text
+    val count = element.itemCount ?: 0
+    holder.count.text = context.resources.getQuantityString(
+      R.plurals.collection_entry_count,
+      count,
+      count
+    )
+    holder.itemView.setOnClickListener { touchListener?.onClick(element, pos) }
+    holder.itemView.setOnLongClickListener { touchListener?.onLongClick(element, pos) ?: false }
+  }
+
   private fun bindCollectionHeader(holder: CollectionHeaderHolder, pos: Int) {
     val item = elements[pos]
     holder.title.text = item.text
@@ -347,6 +374,15 @@ class QuranListAdapter(
     }
   }
 
+  private inner class CollectionsHeaderHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val add: View = itemView.findViewById(R.id.collections_header_add)
+  }
+
+  private inner class CollectionHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val name: TextView = itemView.findViewById(R.id.collection_name)
+    val count: TextView = itemView.findViewById(R.id.collection_count)
+  }
+
   private inner class HighlightColorHolder(itemView: View) : HeaderHolder(itemView) {
     val swatch: ImageView = itemView.findViewById(R.id.rowIcon)
   }
@@ -362,5 +398,7 @@ class QuranListAdapter(
     private const val VIEW_TYPE_ROW = 1
     private const val VIEW_TYPE_COLLECTION_HEADER = 2
     private const val VIEW_TYPE_HIGHLIGHT_COLOR = 3
+    private const val VIEW_TYPE_COLLECTIONS_HEADER = 4
+    private const val VIEW_TYPE_COLLECTION = 5
   }
 }

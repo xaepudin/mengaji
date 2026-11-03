@@ -149,8 +149,6 @@ internal fun AyahBookmarkSheet(
     }
 
     Column {
-      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
       if (creatingCollection) {
         NewCollectionInputRow(
           name = newCollectionName,
@@ -171,6 +169,11 @@ internal fun AyahBookmarkSheet(
       } else {
         NewCollectionTriggerRow(onClick = { creatingCollection = true })
       }
+
+      HorizontalDivider(
+        modifier = Modifier.padding(horizontal = 18.dp),
+        color = MaterialTheme.colorScheme.outlineVariant
+      )
     }
   }
 }

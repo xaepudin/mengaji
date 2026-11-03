@@ -20,6 +20,8 @@ public class QuranRow {
   public static final int HIGHLIGHT_COLOR = 7;
   public static final int HIGHLIGHTED_AYAH = 8;
   public static final int HIGHLIGHTS_HEADER = 9;
+  public static final int COLLECTIONS_HEADER = 10;
+  public static final int COLLECTION = 11;
 
   public int sura;
   public int ayah;
@@ -38,6 +40,7 @@ public class QuranRow {
   public String tagId;
   public String bookmarkId;
   public Bookmark bookmark;
+  public long collectionId;
 
   public Integer itemCount;
   public boolean isCollapsible;
@@ -60,6 +63,7 @@ public class QuranRow {
     private Integer juzType;
     private String tagId;
     private String bookmarkId;
+    private long collectionId;
     private String juzOverlayText;
     private long dateAddedInMillis;
     private Integer imageFilterColorResource;
@@ -146,6 +150,11 @@ public class QuranRow {
       return this;
     }
 
+    public Builder withCollectionId(long id) {
+      collectionId = id;
+      return this;
+    }
+
     public Builder withDate(long timeStamp) {
       dateAddedInMillis = timeStamp * 1000;
       return this;
@@ -180,7 +189,7 @@ public class QuranRow {
     public QuranRow build() {
       return new QuranRow(text, metadata, rowType, sura,
           ayah, page, imageResource, imageFilterColorResource, imageContentDescription, juzType,
-          juzOverlayText, bookmarkId, tagId, bookmark, dateAddedInMillis, itemCount,
+          juzOverlayText, bookmarkId, tagId, bookmark, collectionId, dateAddedInMillis, itemCount,
           isCollapsible, isCollapsed, isReadOnlyCollection, highlightColor, readingBookmarkType);
     }
   }
@@ -189,8 +198,8 @@ public class QuranRow {
       int sura, int ayah, int page, Integer imageResource, Integer filterColorResource,
       String imageContentDescription, Integer juzType, String juzOverlayText, String bookmarkId,
       String tagId, Bookmark bookmark,
-                   long dateAddedInMillis, Integer itemCount, boolean isCollapsible,
-                   boolean isCollapsed, boolean isReadOnlyCollection,
+                   long collectionId, long dateAddedInMillis, Integer itemCount,
+                   boolean isCollapsible, boolean isCollapsed, boolean isReadOnlyCollection,
                    HighlightColor highlightColor, ReadingBookmarkType readingBookmarkType) {
     this.text = text;
     this.rowType = rowType;
@@ -206,6 +215,7 @@ public class QuranRow {
     this.tagId = tagId;
     this.bookmarkId = bookmarkId;
     this.bookmark = bookmark;
+    this.collectionId = collectionId;
     this.dateAddedInMillis = dateAddedInMillis;
     this.itemCount = itemCount;
     this.isCollapsible = isCollapsible;
@@ -217,6 +227,14 @@ public class QuranRow {
 
   public boolean isHeader() {
     return rowType == HEADER || rowType == BOOKMARK_HEADER || rowType == HIGHLIGHTS_HEADER;
+  }
+
+  public boolean isCollectionsHeader() {
+    return rowType == COLLECTIONS_HEADER;
+  }
+
+  public boolean isCollection() {
+    return rowType == COLLECTION;
   }
 
   public boolean isHighlightsHeader() {
