@@ -208,10 +208,6 @@
     <item quantity="one">%1$d entry</item>
     <item quantity="other">%1$d entries</item>
   </plurals>
-  <plurals name="collection_count">
-    <item quantity="one">%1$d collection</item>
-    <item quantity="other">%1$d collections</item>
-  </plurals>
 
   <!-- Quran Preference Activity -->
   <string name="appearance">App theme</string>

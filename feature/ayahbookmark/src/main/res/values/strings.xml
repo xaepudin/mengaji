@@ -12,6 +12,7 @@
   <string name="ayahbookmark_highlight_title">Highlight</string>
   <string name="ayahbookmark_highlight_saved_on_close">Saved when you close this sheet</string>
   <string name="ayahbookmark_highlight_none">None</string>
+  <string name="ayahbookmark_add_to_collection">Add to collection</string>
   <string name="ayahbookmark_collections_header">Collections</string>
   <string name="ayahbookmark_new_collection">New collection</string>
   <string name="ayahbookmark_collection_name_hint">Collection name</string>

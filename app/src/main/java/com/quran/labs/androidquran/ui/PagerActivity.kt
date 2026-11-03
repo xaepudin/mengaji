@@ -1907,13 +1907,32 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     toggleActionBarVisibility(false)
   }
 
-  private fun showAyahBookmarkSheet(suraAyah: SuraAyah) {
-    val ayahBookmarkWrapper = AyahBookmarkWrapper(this, suraAyah) { isBookmarked ->
-      overlay.removeAllViews()
-      overlay.visibility = View.GONE
-      toggleActionBarVisibility(true)
-      updateAyahBookmark(suraAyah, isBookmarked)
-    }
+  private fun showAyahBookmarkSheet(suraAyah: SuraAyah, endSuraAyah: SuraAyah) {
+    val ayahBookmarkWrapper = AyahBookmarkWrapper(
+      context = this,
+      currentAyah = suraAyah,
+      onDismissed = { isBookmarked ->
+        overlay.removeAllViews()
+        overlay.visibility = View.GONE
+        toggleActionBarVisibility(true)
+        updateAyahBookmark(suraAyah, isBookmarked)
+      },
+      onAddToCollection = {
+        CollectionDialogs.showAddToCollection(
+          this@PagerActivity,
+          collectionDao,
+          quranDisplayData,
+          suraAyah,
+          endSuraAyah
+        ) { collection ->
+          Toast.makeText(
+            this@PagerActivity,
+            getString(R.string.collection_added, collection.name),
+            Toast.LENGTH_SHORT
+          ).show()
+        }
+      }
+    )
     overlay.removeAllViews()
     overlay.addView(
       ayahBookmarkWrapper,
@@ -2035,19 +2054,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
       val itemId = item.itemId
       if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_bookmark_ayah) {
-        CollectionDialogs.showAddToCollection(
-          this@PagerActivity,
-          collectionDao,
-          quranDisplayData,
-          startSuraAyah,
-          endSuraAyah
-        ) { collection ->
-          Toast.makeText(
-            this@PagerActivity,
-            getString(R.string.collection_added, collection.name),
-            Toast.LENGTH_SHORT
-          ).show()
-        }
+        showAyahBookmarkSheet(startSuraAyah, endSuraAyah)
       } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_translate_ayah) {
         sliderPage =
           slidingPagerAdapter.getPagePosition(SlidingPagerAdapter.TRANSLATION_PAGE)

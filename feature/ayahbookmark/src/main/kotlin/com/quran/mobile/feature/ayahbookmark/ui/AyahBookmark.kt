@@ -40,6 +40,7 @@ import kotlin.time.Instant
 @Composable
 fun AyahBookmark(
   state: AyahBookmarkState,
+  onAddToCollection: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val selection = state.readingBookmarkSelection
@@ -61,7 +62,7 @@ fun AyahBookmark(
     modifier = modifier.fillMaxWidth()
   ) { target ->
     if (target == null) {
-      AyahBookmarkSheet(state = state)
+      AyahBookmarkSheet(state = state, onAddToCollection = onAddToCollection)
     } else {
       ReadingBookmarkSheet(
         state = target,

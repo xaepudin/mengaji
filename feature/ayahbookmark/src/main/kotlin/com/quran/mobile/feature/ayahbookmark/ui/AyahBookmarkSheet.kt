@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -24,13 +22,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.quran.mobile.feature.ayahbookmark.R
-import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkCollectionCreationState
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkEvent
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkState
 
 @Composable
 internal fun AyahBookmarkSheet(
   state: AyahBookmarkState,
+  onAddToCollection: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   val eventSink = state.eventSink
@@ -45,7 +43,7 @@ internal fun AyahBookmarkSheet(
       .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
       .background(MaterialTheme.colorScheme.surface)
   ) {
-    // fixed head: drag handle, title row, reading bookmarks, highlight, collections label
+    // fixed head: drag handle, title row, reading bookmarks, highlight, collections action
     Column(modifier = Modifier.padding(top = 18.dp, start = 18.dp, end = 18.dp)) {
       Box(
         modifier = Modifier
@@ -119,46 +117,10 @@ internal fun AyahBookmarkSheet(
 
       HorizontalDivider(modifier = Modifier.padding(top = 14.dp))
 
-      Text(
-        text = stringResource(R.string.ayahbookmark_collections_header).uppercase(),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
+      AddToCollectionRow(
+        onClick = onAddToCollection,
+        modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
       )
-    }
-
-    // scrollable body: the list of collections
-    LazyColumn(
-      modifier = Modifier
-        .weight(1f, fill = false)
-        .padding(horizontal = 18.dp)
-    ) {
-      items(state.collections, key = { it.id }) { collection ->
-        CollectionRow(
-          collection = collection,
-          onToggle = { id -> eventSink(AyahBookmarkEvent.ToggleCollection(id)) }
-        )
-      }
-    }
-
-    // pinned footer
-    Column {
-      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-      when (val creation = state.collectionCreation) {
-        is AyahBookmarkCollectionCreationState.Inactive -> NewCollectionTriggerRow(
-          onClick = { eventSink(AyahBookmarkEvent.StartCreatingCollection) }
-        )
-
-        is AyahBookmarkCollectionCreationState.Active -> NewCollectionInputRow(
-          name = creation.name,
-          isSubmitting = creation.isSubmitting,
-          nameError = creation.nameError,
-          onNameChange = { eventSink(AyahBookmarkEvent.CollectionNameChanged(it)) },
-          onCancel = { eventSink(AyahBookmarkEvent.CancelCreatingCollection) },
-          onCreate = { eventSink(AyahBookmarkEvent.CreateCollection(creation.name)) }
-        )
-      }
     }
   }
 }

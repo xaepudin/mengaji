@@ -27,7 +27,7 @@ data class AyahBookmarkState(
   val eventSink: (AyahBookmarkEvent) -> Unit = {}
 ) {
   val isSaved: Boolean
-    get() = currentAyahReadingBookmarks.isNotEmpty() || highlight != null || collections.any { it.isChecked }
+    get() = currentAyahReadingBookmarks.isNotEmpty() || highlight != null
 }
 
 @Immutable

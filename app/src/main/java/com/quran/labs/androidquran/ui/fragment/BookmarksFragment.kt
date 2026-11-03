@@ -10,7 +10,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -18,6 +17,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,7 +33,10 @@ import com.quran.labs.androidquran.presenter.bookmark.BookmarkPresenter
 import com.quran.labs.androidquran.presenter.bookmark.BookmarksContextualModePresenter
 import com.quran.labs.androidquran.ui.BookmarkListActivity
 import com.quran.labs.androidquran.ui.QuranActivity
-import com.quran.labs.androidquran.ui.collection.CollectionsActivity
+import com.quran.labs.androidquran.ui.collection.CollectionDetailActivity
+import com.quran.labs.androidquran.ui.collection.CollectionDialogs
+import com.quran.labs.androidquran.ui.collection.CollectionsAdapter
+import com.quran.labs.androidquran.ui.collection.CollectionsHeaderAdapter
 import com.quran.labs.androidquran.ui.helpers.BookmarkUIConverter
 import com.quran.labs.androidquran.ui.helpers.QuranListAdapter
 import com.quran.labs.androidquran.ui.helpers.QuranListAdapter.QuranTouchListener
@@ -41,6 +45,7 @@ import com.quran.mobile.feature.sync.BookmarksSignInCard
 import com.quran.mobile.feature.sync.QuranSyncActivity
 import com.quran.mobile.feature.sync.QuranSyncManager
 import com.quran.mobile.collection.AyahCollectionDao
+import com.quran.mobile.collection.model.AyahCollection
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.launch
 
@@ -48,6 +53,7 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
   private var bookmarksSwipeRefresh: SwipeRefreshLayout? = null
   private var recyclerView: RecyclerView? = null
   private var bookmarksAdapter: QuranListAdapter? = null
+  private var collectionsAdapter: CollectionsAdapter? = null
   private var emptyStateView: ComposeView? = null
 
   @Inject
@@ -101,7 +107,20 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
       QuranListAdapter(context, recyclerView, emptyArray(), true)
     bookmarksAdapter.setQuranTouchListener(this)
     this.bookmarksAdapter = bookmarksAdapter
-    recyclerView.setAdapter(bookmarksAdapter)
+
+    val collectionsHeaderAdapter = CollectionsHeaderAdapter {
+      CollectionDialogs.showCreateCollection(requireActivity(), collectionDao)
+    }
+    val collectionsAdapter = CollectionsAdapter(
+      onClick = { collection ->
+        startActivity(CollectionDetailActivity.intent(requireContext(), collection.id))
+      },
+      onLongClick = ::showCollectionOptions
+    )
+    this.collectionsAdapter = collectionsAdapter
+    recyclerView.setAdapter(
+      ConcatAdapter(collectionsHeaderAdapter, collectionsAdapter, bookmarksAdapter)
+    )
 
     val emptyStateView = view.findViewById<ComposeView>(R.id.bookmarks_empty_state)
     emptyStateView.setContent {
@@ -140,18 +159,10 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
-    view.findViewById<View>(R.id.collections_entry).setOnClickListener {
-      startActivity(CollectionsActivity.intent(requireContext()))
-    }
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
         collectionDao.collectionsFlow().collect { collections ->
-          val count = view.findViewById<TextView>(R.id.collections_entry_count)
-          count.text = resources.getQuantityString(
-            R.plurals.collection_count,
-            collections.size,
-            collections.size
-          )
+          collectionsAdapter?.submitList(collections)
         }
       }
     }
@@ -178,6 +189,7 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
     bookmarksSwipeRefresh = null
     recyclerView = null
     bookmarksAdapter = null
+    collectionsAdapter = null
     emptyStateView = null
     super.onDestroyView()
   }
@@ -276,12 +288,18 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
       }
       bookmarksAdapter.setShowTags(false)
       bookmarksAdapter.setShowDate(bookmarkPresenter.isDateShowing)
-      bookmarksAdapter.setElements(
-        items.rows.toTypedArray<QuranRow>(), items.tagMap
-      )
+      val ayahsHeader = requireContext().getString(R.string.ayahs)
+      val rows = items.rows.filterNot { row ->
+        row.rowType == QuranRow.AYAH_BOOKMARK ||
+          row.rowType == QuranRow.HIGHLIGHTED_AYAH ||
+          (row.rowType == QuranRow.HEADER && row.text == ayahsHeader)
+      }
+      bookmarksAdapter.setElements(rows.toTypedArray<QuranRow>(), items.tagMap)
       bookmarksAdapter.notifyDataSetChanged()
 
-      emptyStateView?.visibility = if (items.rows.isEmpty()) View.VISIBLE else View.GONE
+      // The collections section is always present, so the old full-screen empty state would
+      // cover it. Its composable is kept, but the list itself handles the empty case.
+      emptyStateView?.visibility = View.GONE
     }
   }
 
@@ -332,6 +350,23 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
       }
     }
     return false
+  }
+
+  private fun showCollectionOptions(collection: AyahCollection) {
+    AlertDialog.Builder(requireContext())
+      .setTitle(collection.name)
+      .setItems(
+        arrayOf(
+          getString(R.string.collection_rename),
+          getString(R.string.collection_delete)
+        )
+      ) { _, which ->
+        when (which) {
+          0 -> CollectionDialogs.showRenameCollection(requireActivity(), collectionDao, collection)
+          else -> CollectionDialogs.showDeleteCollection(requireActivity(), collectionDao, collection)
+        }
+      }
+      .show()
   }
 
   private fun isValidSelection(selected: QuranRow): Boolean {

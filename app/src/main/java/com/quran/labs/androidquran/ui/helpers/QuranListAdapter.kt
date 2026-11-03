@@ -62,6 +62,9 @@ class QuranListAdapter(
   }
 
   override fun onBindViewHolder(holder: HeaderHolder, position: Int) {
+    // Keep the adapter-local position on the row. This adapter can be nested in a
+    // ConcatAdapter, where getChildAdapterPosition would otherwise be the global position.
+    holder.itemView.tag = position
     when (getItemViewType(position)) {
       VIEW_TYPE_HEADER -> bindHeader(holder, position)
       VIEW_TYPE_COLLECTION_HEADER -> bindCollectionHeader(holder as CollectionHeaderHolder, position)
@@ -85,7 +88,7 @@ class QuranListAdapter(
   }
 
   override fun onClick(v: View) {
-    val position = recyclerView.getChildAdapterPosition(v)
+    val position = v.tag as? Int ?: RecyclerView.NO_POSITION
     if (position != RecyclerView.NO_POSITION) {
       val element = elements[position]
       if (touchListener == null) {
@@ -98,7 +101,7 @@ class QuranListAdapter(
 
   override fun onLongClick(v: View): Boolean {
     touchListener?.let { listener ->
-      val position = recyclerView.getChildAdapterPosition(v)
+      val position = v.tag as? Int ?: RecyclerView.NO_POSITION
       if (position != RecyclerView.NO_POSITION) {
         return listener.onLongClick(elements[position], position)
       }
@@ -336,7 +339,7 @@ class QuranListAdapter(
     val expandIcon: ImageView = itemView.findViewById(R.id.expandIcon)
     val openIcon: ImageView = itemView.findViewById<ImageView>(R.id.openIcon).also { icon ->
       icon.setOnClickListener {
-        val position = bindingAdapterPosition
+        val position = itemView.tag as? Int ?: RecyclerView.NO_POSITION
         if (position != RecyclerView.NO_POSITION) {
           touchListener?.onOpenClicked(elements[position], position)
         }

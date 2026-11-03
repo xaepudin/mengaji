@@ -45,7 +45,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class AyahBookmarkWrapper(
   context: Context,
   private val currentAyah: SuraAyah,
-  private val onDismissed: (isBookmarked: Boolean) -> Unit
+  private val onDismissed: (isBookmarked: Boolean) -> Unit,
+  private val onAddToCollection: (SuraAyah) -> Unit
 ) : FrameLayout(context) {
 
   @Inject
@@ -55,6 +56,7 @@ class AyahBookmarkWrapper(
   lateinit var readingBookmarkUpdater: ReadingBookmarkUpdater
 
   private var pendingReadingBookmarkAction: ReadingBookmarkAction? = null
+  private var addToCollectionRequested = false
 
   private val actionSink: (ReadingBookmarkAction) -> Unit = { pendingReadingBookmarkAction = it }
 
@@ -72,7 +74,12 @@ class AyahBookmarkWrapper(
   }
 
   private fun notifyDismissed(state: AyahBookmarkState) {
+    val wantsCollection = addToCollectionRequested
+    addToCollectionRequested = false
     onDismissed(state.isSaved)
+    if (wantsCollection) {
+      onAddToCollection(currentAyah)
+    }
 
     when (val action = pendingReadingBookmarkAction) {
       is ReadingBookmarkAction.Place ->
@@ -149,6 +156,10 @@ class AyahBookmarkWrapper(
         sheetContent = {
           AyahBookmark(
             state = state,
+            onAddToCollection = {
+              addToCollectionRequested = true
+              state.eventSink(AyahBookmarkEvent.Done)
+            },
             modifier = Modifier
               .fillMaxHeight()
               .imePadding()
