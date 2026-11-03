@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="add_to_collection">Add to collection</string>
   <string name="bookmark_ayah">Bookmark this Ayah</string>
+  <string name="add_to_collection">Add to collection</string>
   <string name="share_ayah">Share Ayah Link</string>
   <string name="share_ayah_text">Share Ayah Text</string>
   <string name="translation_ayah">Ayah Translation/Tafseer</string>

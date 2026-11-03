@@ -47,7 +47,6 @@ import timber.log.Timber
 class AyahSearchActivity : AppCompatActivity() {
 
   @Inject lateinit var lafziSearchRepository: LafziSearchRepository
-  @Inject lateinit var pageSnippetLoader: PageImageSnippetLoader
   @Inject lateinit var ayahSearchTranslationRepository: AyahSearchTranslationRepository
   @Inject lateinit var quranNavigatorFactory: QuranNavigator.Factory
   @Inject lateinit var quranInfo: QuranInfo
@@ -93,8 +92,6 @@ class AyahSearchActivity : AppCompatActivity() {
       context = this,
       quranInfo = quranInfo,
       quranDisplayData = quranDisplayData,
-      pageSnippetLoader = pageSnippetLoader,
-      scope = lifecycleScope,
       onResultClick = ::openResult
     )
     resultsList.layoutManager = LinearLayoutManager(this)

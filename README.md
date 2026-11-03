@@ -26,7 +26,7 @@ project created by the Quran.com team and its contributors.
 - **Bookmark** pages and ayahs, tag them, and keep track of your reading progress.
 - **Collections**: group ayah ranges into named collections, reorder entries, rename them,
   reopen an entry with its ayah range highlighted, and read every ayah in a collection as a
-  dedicated list.
+  dedicated list. Collections are opened from the Bookmarks tab.
 - **Search** the Quran and translations.
 - **Ayah search** with Lafzi: type how an ayah sounds (for example, `bismillah`) or type it in
   Arabic, then open a matching ayah directly in the reader. The result list can show your selected
@@ -92,6 +92,8 @@ repository so a checkout stays small; the Android build tools expand `.gz` asset
   team and its [contributors](https://github.com/quran/quran_android/blob/main/CONTRIBUTORS.md).
 - Ayah search index from [Lafzi](https://github.com/lafzi/lafzi-android) and
   [lafzi-indexer](https://github.com/lafzi/lafzi-indexer).
+- `me_quran.ttf`, used for search result and collection reading text, comes from the
+  [Lafzi](https://github.com/lafzi/lafzi-android) project.
 - Madani images from the [quran images project](https://github.com/quran/quran.com-images) on
   GitHub.
 - Qaloon images used with permission of Nous Memes Editions Et Diffusion (Tunisia).

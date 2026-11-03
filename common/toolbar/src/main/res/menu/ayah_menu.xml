@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/cab_bookmark_ayah"
           android:icon="@drawable/ic_not_favorite"
-          android:title="@string/bookmark_ayah" />
+          android:title="@string/add_to_collection" />
     <item android:id="@+id/cab_share_ayah"
           android:icon="@drawable/ic_share"
           android:title="@string/share_ayah_text">
@@ -28,7 +28,4 @@
           android:visible="false"
           android:icon="@drawable/ic_mic"
           android:title="@string/recite_from_here" />
-    <item android:id="@+id/cab_add_to_collection"
-          android:icon="@drawable/ic_add_to_collection"
-          android:title="@string/add_to_collection" />
 </menu>

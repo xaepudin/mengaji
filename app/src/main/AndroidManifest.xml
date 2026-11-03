@@ -108,6 +108,11 @@
         android:exported="false" />
 
     <activity
+        android:name=".ui.collection.CollectionsActivity"
+        android:theme="@style/QuranToolBarDayNight"
+        android:exported="false" />
+
+    <activity
         android:name=".ui.collection.CollectionDetailActivity"
         android:theme="@style/QuranToolBarDayNight"
         android:exported="false" />

@@ -2035,7 +2035,19 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
       val itemId = item.itemId
       if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_bookmark_ayah) {
-        showAyahBookmarkSheet(startSuraAyah)
+        CollectionDialogs.showAddToCollection(
+          this@PagerActivity,
+          collectionDao,
+          quranDisplayData,
+          startSuraAyah,
+          endSuraAyah
+        ) { collection ->
+          Toast.makeText(
+            this@PagerActivity,
+            getString(R.string.collection_added, collection.name),
+            Toast.LENGTH_SHORT
+          ).show()
+        }
       } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_translate_ayah) {
         sliderPage =
           slidingPagerAdapter.getPagePosition(SlidingPagerAdapter.TRANSLATION_PAGE)
@@ -2055,20 +2067,6 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         shareAyah(startSuraAyah, endSuraAyah, false)
       } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_copy_ayah) {
         shareAyah(startSuraAyah, endSuraAyah, true)
-      } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_add_to_collection) {
-        CollectionDialogs.showAddToCollection(
-          this@PagerActivity,
-          collectionDao,
-          quranDisplayData,
-          startSuraAyah,
-          endSuraAyah
-        ) { collection ->
-          Toast.makeText(
-            this@PagerActivity,
-            getString(R.string.collection_added, collection.name),
-            Toast.LENGTH_SHORT
-          ).show()
-        }
       } else {
         return false
       }

@@ -156,6 +156,10 @@
     <item quantity="one">%1$d entri</item>
     <item quantity="other">%1$d entri</item>
   </plurals>
+  <plurals name="collection_count">
+    <item quantity="one">%1$d koleksi</item>
+    <item quantity="other">%1$d koleksi</item>
+  </plurals>
 
   <!-- Quran Preference Activity -->
   <string name="appearance">Tampilan</string>

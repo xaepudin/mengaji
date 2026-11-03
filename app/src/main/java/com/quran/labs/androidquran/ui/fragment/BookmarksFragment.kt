@@ -10,6 +10,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -31,6 +32,7 @@ import com.quran.labs.androidquran.presenter.bookmark.BookmarkPresenter
 import com.quran.labs.androidquran.presenter.bookmark.BookmarksContextualModePresenter
 import com.quran.labs.androidquran.ui.BookmarkListActivity
 import com.quran.labs.androidquran.ui.QuranActivity
+import com.quran.labs.androidquran.ui.collection.CollectionsActivity
 import com.quran.labs.androidquran.ui.helpers.BookmarkUIConverter
 import com.quran.labs.androidquran.ui.helpers.QuranListAdapter
 import com.quran.labs.androidquran.ui.helpers.QuranListAdapter.QuranTouchListener
@@ -38,6 +40,7 @@ import com.quran.labs.androidquran.ui.helpers.QuranRow
 import com.quran.mobile.feature.sync.BookmarksSignInCard
 import com.quran.mobile.feature.sync.QuranSyncActivity
 import com.quran.mobile.feature.sync.QuranSyncManager
+import com.quran.mobile.collection.AyahCollectionDao
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.launch
 
@@ -58,6 +61,9 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
 
   @Inject
   lateinit var syncManager: QuranSyncManager
+
+  @Inject
+  lateinit var collectionDao: AyahCollectionDao
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
@@ -131,9 +137,33 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
     return view
   }
 
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+
+    view.findViewById<View>(R.id.collections_entry).setOnClickListener {
+      startActivity(CollectionsActivity.intent(requireContext()))
+    }
+    viewLifecycleOwner.lifecycleScope.launch {
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        collectionDao.collectionsFlow().collect { collections ->
+          val count = view.findViewById<TextView>(R.id.collections_entry_count)
+          count.text = resources.getQuantityString(
+            R.plurals.collection_count,
+            collections.size,
+            collections.size
+          )
+        }
+      }
+    }
+  }
+
   override fun onStart() {
     super.onStart()
     bookmarkPresenter.bind(this)
+    // The tag-based collection grouping is replaced by the new ayah collections.
+    if (bookmarkPresenter.isGroupedByTags) {
+      bookmarkPresenter.toggleGroupByTags()
+    }
     bookmarksContextualModePresenter.bind(this)
   }
 
@@ -183,7 +213,7 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
       }
 
       val groupByTags = menu.findItem(R.id.group_by_tags)
-      groupByTags.isVisible = true
+      groupByTags.isVisible = false
       groupByTags.isEnabled = true
       groupByTags.isChecked = bookmarkPresenter.isGroupedByTags
 
@@ -244,7 +274,7 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
       if (bookmarksContextualModePresenter.isInActionMode()) {
         bookmarksContextualModePresenter.finishActionMode()
       }
-      bookmarksAdapter.setShowTags(bookmarkPresenter.shouldShowInlineTags())
+      bookmarksAdapter.setShowTags(false)
       bookmarksAdapter.setShowDate(bookmarkPresenter.isDateShowing)
       bookmarksAdapter.setElements(
         items.rows.toTypedArray<QuranRow>(), items.tagMap
@@ -320,9 +350,10 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
     if (bookmarksAdapter != null) {
       val menuVisibility =
         bookmarkPresenter.getContextualOperationsForItems(bookmarksAdapter.getCheckedItems())
-      menu.findItem(R.id.cab_edit_tag).isVisible = menuVisibility[0]
+      menu.findItem(R.id.cab_edit_tag).isVisible = false
       menu.findItem(R.id.cab_delete).isVisible = menuVisibility[1]
-      menu.findItem(R.id.cab_tag_bookmark).isVisible = menuVisibility[2]
+      menu.findItem(R.id.cab_tag_bookmark).isVisible = false
+      menu.findItem(R.id.cab_new_tag)?.isVisible = false
     }
   }
 

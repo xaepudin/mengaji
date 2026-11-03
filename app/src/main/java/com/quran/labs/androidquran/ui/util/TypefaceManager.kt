@@ -15,6 +15,7 @@ object TypefaceManager {
   private var arabicTafseerTypeface: Typeface? = null
   private var arabicHeaderFooterTypeface: Typeface? = null
   private var dyslexicTypeface: Typeface? = null
+  private var meQuranTypeface: Typeface? = null
 
   @JvmStatic
   fun getUthmaniTypeface(context: Context): Typeface {
@@ -27,6 +28,17 @@ object TypefaceManager {
       }
       val instance = Typeface.createFromAsset(context.assets, fontName)
       typeface = instance
+      instance
+    }
+  }
+
+  /**
+   * The Quran font used by the Lafzi search project for its result text.
+   */
+  fun getMeQuranTypeface(context: Context): Typeface {
+    return meQuranTypeface ?: run {
+      val instance = Typeface.createFromAsset(context.assets, "me_quran.ttf")
+      meQuranTypeface = instance
       instance
     }
   }
