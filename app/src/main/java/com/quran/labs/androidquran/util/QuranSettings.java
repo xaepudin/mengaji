@@ -34,6 +34,7 @@ public class QuranSettings implements PageThemeSettings {
   private static final String PREF_COLLECTION_READING_SHOW_TRANSLATION =
       "collection_reading_show_translation";
   private static final String PREF_COLLECTIONS_COLLAPSED = "collections_collapsed";
+  private static final String PREF_COLLECTION_READING_CONTINUOUS = "collection_reading_continuous";
 
   private static QuranSettings instance;
 
@@ -121,6 +122,14 @@ public class QuranSettings implements PageThemeSettings {
 
   public void setCollectionsCollapsed(boolean collapsed) {
     prefs.edit().putBoolean(PREF_COLLECTIONS_COLLAPSED, collapsed).apply();
+  }
+
+  public boolean isCollectionReadingContinuous() {
+    return prefs.getBoolean(PREF_COLLECTION_READING_CONTINUOUS, false);
+  }
+
+  public void setCollectionReadingContinuous(boolean continuous) {
+    prefs.edit().putBoolean(PREF_COLLECTION_READING_CONTINUOUS, continuous).apply();
   }
 
   @Override

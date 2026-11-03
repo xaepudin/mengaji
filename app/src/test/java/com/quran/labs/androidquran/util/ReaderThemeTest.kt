@@ -53,14 +53,17 @@ class ReaderThemeTest {
     val settings = QuranSettings.getInstance(context)
     assertThat(settings.isCollectionReadingShowTranslation()).isTrue()
     assertThat(settings.areCollectionsCollapsed()).isFalse()
+    assertThat(settings.isCollectionReadingContinuous()).isFalse()
 
     settings.setCollectionReadingShowTranslation(false)
     settings.setCollectionsCollapsed(true)
+    settings.setCollectionReadingContinuous(true)
 
     QuranSettings.setInstance(null)
     val restored = QuranSettings.getInstance(context)
     assertThat(restored.isCollectionReadingShowTranslation()).isFalse()
     assertThat(restored.areCollectionsCollapsed()).isTrue()
+    assertThat(restored.isCollectionReadingContinuous()).isTrue()
   }
 
   @Test fun `keep navigation bar preference uses the settings key`() {

@@ -184,6 +184,8 @@
   <string name="collection_reading_empty">There are no ayahs to read in this collection.</string>
   <string name="collection_reading_show_translation">Show translation</string>
   <string name="collection_reading_hide_translation">Hide translation</string>
+  <string name="collection_reading_show_continuous">Render ayahs continuously</string>
+  <string name="collection_reading_show_cards">Render ayahs as cards</string>
   <string name="collection_new">New collection</string>
   <string name="collection_name_hint">Collection name</string>
   <string name="collection_name_required">Enter a collection name</string>

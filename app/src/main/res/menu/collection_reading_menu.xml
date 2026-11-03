@@ -5,4 +5,8 @@
       android:id="@+id/action_toggle_translation"
       android:title="@string/collection_reading_hide_translation"
       app:showAsAction="never" />
+  <item
+      android:id="@+id/action_toggle_continuous"
+      android:title="@string/collection_reading_show_continuous"
+      app:showAsAction="never" />
 </menu>

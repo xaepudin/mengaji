@@ -132,6 +132,8 @@
   <string name="collection_reading_empty">Tidak ada ayat untuk dibaca di koleksi ini.</string>
   <string name="collection_reading_show_translation">Tampilkan terjemahan</string>
   <string name="collection_reading_hide_translation">Sembunyikan terjemahan</string>
+  <string name="collection_reading_show_continuous">Tampilkan ayat secara berurutan</string>
+  <string name="collection_reading_show_cards">Tampilkan ayat sebagai kartu</string>
   <string name="collection_new">Koleksi baru</string>
   <string name="collection_name_hint">Nama koleksi</string>
   <string name="collection_name_required">Masukkan nama koleksi</string>

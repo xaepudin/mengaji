@@ -3,6 +3,7 @@ package com.quran.labs.androidquran.ayahsearch
 import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +16,7 @@ import com.quran.data.core.QuranInfo
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.ui.util.TypefaceManager
+import com.quran.labs.androidquran.util.QuranUtils
 
 class AyahSearchAdapter(
   private val context: Context,
@@ -35,6 +37,15 @@ class AyahSearchAdapter(
     set(value) {
       if (field != value) {
         field = value
+        notifyDataSetChanged()
+      }
+    }
+
+  var showContinuous: Boolean = false
+    set(value) {
+      if (field != value) {
+        field = value
+        rebuildRows()
         notifyDataSetChanged()
       }
     }
@@ -65,6 +76,7 @@ class AyahSearchAdapter(
   override fun getItemViewType(position: Int): Int {
     return when (rows[position]) {
       is Row.GroupHeader -> TYPE_GROUP_HEADER
+      is Row.Continuous -> TYPE_CONTINUOUS
       is Row.Result -> TYPE_RESULT
     }
   }
@@ -77,6 +89,11 @@ class AyahSearchAdapter(
           inflater.inflate(R.layout.item_collection_reading_group_header, parent, false)
         )
 
+      TYPE_CONTINUOUS ->
+        ContinuousViewHolder(
+          inflater.inflate(R.layout.item_collection_reading_continuous, parent, false)
+        )
+
       else -> ViewHolder(inflater.inflate(R.layout.item_ayah_search_result, parent, false))
     }
   }
@@ -85,6 +102,7 @@ class AyahSearchAdapter(
     when (val row = rows[position]) {
       is Row.Result -> if (holder is ViewHolder) bindResult(holder, row.result)
       is Row.GroupHeader -> if (holder is GroupHeaderViewHolder) bindGroupHeader(holder, row.header)
+      is Row.Continuous -> if (holder is ContinuousViewHolder) bindContinuous(holder, row.results)
     }
   }
 
@@ -95,6 +113,47 @@ class AyahSearchAdapter(
     } else {
       holder.range.visibility = View.VISIBLE
       holder.range.text = header.range
+    }
+  }
+
+  private fun bindContinuous(holder: ContinuousViewHolder, results: List<AyahSearchResult>) {
+    val builder = SpannableStringBuilder()
+    results.forEachIndexed { index, result ->
+      if (index > 0) {
+        builder.append(" ")
+      }
+      builder.append(result.arabicText)
+      builder.append(" ﴿")
+      builder.append(QuranUtils.getLocalizedNumber(result.ayah))
+      builder.append("﴾ ")
+    }
+    holder.arabic.typeface = quranTypeface
+    holder.arabic.text = builder
+
+    if (!showTranslation) {
+      holder.translation.visibility = View.GONE
+    } else {
+      val translations = SpannableStringBuilder()
+      for (result in results) {
+        val translation = result.translation ?: continue
+        if (translations.isNotEmpty()) {
+          translations.append("\n\n")
+        }
+        translations.append("${result.sura}:${result.ayah} ")
+        translations.append(
+          HtmlCompat.fromHtml(translation, HtmlCompat.FROM_HTML_MODE_COMPACT)
+        )
+      }
+      if (translations.isEmpty()) {
+        holder.translation.visibility = View.GONE
+      } else {
+        holder.translation.visibility = View.VISIBLE
+        holder.translation.text = translations
+      }
+    }
+
+    holder.itemView.setOnClickListener {
+      results.firstOrNull()?.let(onResultClick)
     }
   }
 
@@ -136,9 +195,27 @@ class AyahSearchAdapter(
 
   private fun rebuildRows() {
     rows = buildList {
-      items.forEachIndexed { index, result ->
-        groupHeaders[index]?.let { header -> add(Row.GroupHeader(header)) }
-        add(Row.Result(result))
+      if (showContinuous) {
+        var group = mutableListOf<AyahSearchResult>()
+        fun flushGroup() {
+          if (group.isNotEmpty()) {
+            add(Row.Continuous(group.toList()))
+            group = mutableListOf()
+          }
+        }
+        items.forEachIndexed { index, result ->
+          groupHeaders[index]?.let { header ->
+            flushGroup()
+            add(Row.GroupHeader(header))
+          }
+          group.add(result)
+        }
+        flushGroup()
+      } else {
+        items.forEachIndexed { index, result ->
+          groupHeaders[index]?.let { header -> add(Row.GroupHeader(header)) }
+          add(Row.Result(result))
+        }
       }
     }
   }
@@ -171,6 +248,11 @@ class AyahSearchAdapter(
     val range: TextView = itemView.findViewById(R.id.reading_group_range)
   }
 
+  private class ContinuousViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val arabic: TextView = itemView.findViewById(R.id.continuous_arabic)
+    val translation: TextView = itemView.findViewById(R.id.continuous_translation)
+  }
+
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val metadata: TextView = itemView.findViewById(R.id.result_metadata)
     val arabic: TextView = itemView.findViewById(R.id.result_arabic)
@@ -180,10 +262,12 @@ class AyahSearchAdapter(
   private sealed interface Row {
     data class Result(val result: AyahSearchResult) : Row
     data class GroupHeader(val header: AyahGroupHeader) : Row
+    data class Continuous(val results: List<AyahSearchResult>) : Row
   }
 
   private companion object {
     const val TYPE_RESULT = 0
     const val TYPE_GROUP_HEADER = 1
+    const val TYPE_CONTINUOUS = 2
   }
 }

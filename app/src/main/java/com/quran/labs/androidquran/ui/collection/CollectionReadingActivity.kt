@@ -64,6 +64,7 @@ class CollectionReadingActivity : AppCompatActivity() {
   private lateinit var emptyView: View
   private var collectionId: Long = -1
   private var showTranslation = true
+  private var continuousAyahs = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
@@ -79,6 +80,7 @@ class CollectionReadingActivity : AppCompatActivity() {
     }
 
     showTranslation = quranSettings.isCollectionReadingShowTranslation()
+    continuousAyahs = quranSettings.isCollectionReadingContinuous()
 
     val toolbar = findViewById<Toolbar>(R.id.toolbar)
     setSupportActionBar(toolbar)
@@ -95,6 +97,7 @@ class CollectionReadingActivity : AppCompatActivity() {
       onResultClick = ::openAyah
     )
     adapter.showTranslation = showTranslation
+    adapter.showContinuous = continuousAyahs
     readingList.layoutManager = LinearLayoutManager(this)
     readingList.adapter = adapter
 
@@ -133,6 +136,13 @@ class CollectionReadingActivity : AppCompatActivity() {
         R.string.collection_reading_show_translation
       }
     )
+    menu.findItem(R.id.action_toggle_continuous)?.title = getString(
+      if (continuousAyahs) {
+        R.string.collection_reading_show_cards
+      } else {
+        R.string.collection_reading_show_continuous
+      }
+    )
     return super.onPrepareOptionsMenu(menu)
   }
 
@@ -147,6 +157,7 @@ class CollectionReadingActivity : AppCompatActivity() {
         showTranslation = !showTranslation
         quranSettings.setCollectionReadingShowTranslation(showTranslation)
         adapter.showTranslation = showTranslation
+    adapter.showContinuous = continuousAyahs
         invalidateOptionsMenu()
         return true
       }
