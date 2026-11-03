@@ -380,17 +380,20 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
       QuranRow.Builder()
         .withType(QuranRow.COLLECTIONS_HEADER)
         .withText(getString(R.string.quran_collections))
+        .withCollapsedState(collectionsCollapsed)
         .build()
     )
-    val collectionRows = collections.map { collection ->
-      QuranRow.Builder()
-        .withType(QuranRow.COLLECTION)
-        .withText(collection.name)
-        .withItemCount(collection.entryCount)
-        .withCollectionId(collection.id)
-        .build()
+    if (!collectionsCollapsed) {
+      val collectionRows = collections.map { collection ->
+        QuranRow.Builder()
+          .withType(QuranRow.COLLECTION)
+          .withText(collection.name)
+          .withItemCount(collection.entryCount)
+          .withCollectionId(collection.id)
+          .build()
+      }
+      merged.addAll(insertAt + 1, collectionRows)
     }
-    merged.addAll(insertAt + 1, collectionRows)
     adapter.setElements(merged.toTypedArray(), tagMap)
     adapter.notifyDataSetChanged()
   }
