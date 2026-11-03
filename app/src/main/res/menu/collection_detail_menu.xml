@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
   <item
+      android:id="@+id/action_read_collection"
+      android:icon="@drawable/ic_collection_read_24"
+      android:title="@string/collection_read"
+      app:showAsAction="always" />
+  <item
       android:id="@+id/action_rename_collection"
       android:title="@string/collection_rename"
       app:showAsAction="never" />

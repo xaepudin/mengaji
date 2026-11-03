@@ -1,96 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
+
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/collections_list"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:clipToPadding="false"
+      android:paddingTop="4dp"
+      android:paddingBottom="88dp" />
 
   <LinearLayout
-      android:id="@+id/collections_header"
+      android:id="@+id/empty_collections"
       android:layout_width="match_parent"
-      android:layout_height="48dp"
-      android:background="@drawable/list_header_background"
-      android:gravity="center_vertical"
-      android:orientation="horizontal"
-      android:paddingStart="16dp"
-      android:paddingEnd="16dp">
+      android:layout_height="match_parent"
+      android:gravity="center"
+      android:orientation="vertical"
+      android:padding="32dp"
+      android:visibility="gone">
 
     <ImageView
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:alpha="0.35"
         android:contentDescription="@null"
         android:src="@drawable/ic_collection_24"
-        app:tint="@color/header_text_color" />
+        app:tint="@color/text_hint_color" />
 
     <TextView
-        android:id="@+id/collections_header_title"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_weight="1"
-        android:text="@string/collection_list_header"
-        android:textColor="@color/header_text_color"
-        android:textSize="16sp" />
-
-    <TextView
-        android:id="@+id/collections_header_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/sura_number_color"
-        android:textSize="16sp" />
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="@string/collection_list_empty"
+        android:textColor="@color/text_hint_color"
+        android:textSize="15sp" />
 
   </LinearLayout>
 
-  <FrameLayout
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_weight="1">
+  <com.google.android.material.floatingactionbutton.FloatingActionButton
+      android:id="@+id/new_collection"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom|end"
+      android:layout_margin="16dp"
+      android:contentDescription="@string/collection_new"
+      android:src="@drawable/ic_add_24" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/collections_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingTop="4dp"
-        android:paddingBottom="88dp" />
-
-    <LinearLayout
-        android:id="@+id/empty_collections"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="32dp"
-        android:visibility="gone">
-
-      <ImageView
-          android:layout_width="64dp"
-          android:layout_height="64dp"
-          android:alpha="0.35"
-          android:contentDescription="@null"
-          android:src="@drawable/ic_collection_24"
-          app:tint="@color/text_hint_color" />
-
-      <TextView
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginTop="12dp"
-          android:gravity="center"
-          android:text="@string/collection_list_empty"
-          android:textColor="@color/text_hint_color"
-          android:textSize="15sp" />
-
-    </LinearLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/new_collection"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:contentDescription="@string/collection_new"
-        android:src="@drawable/ic_add_24" />
-
-  </FrameLayout>
-
-</LinearLayout>
+</FrameLayout>

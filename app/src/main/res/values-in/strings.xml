@@ -126,8 +126,6 @@
 
   <!-- Collections -->
   <string name="quran_collections">Koleksi</string>
-  <string name="collection_list_header">Koleksi Anda</string>
-  <string name="collection_entries_header">Entri</string>
   <string name="collection_read">Baca</string>
   <string name="collection_reading">Membaca</string>
   <string name="collection_reading_empty">Tidak ada ayat untuk dibaca di koleksi ini.</string>

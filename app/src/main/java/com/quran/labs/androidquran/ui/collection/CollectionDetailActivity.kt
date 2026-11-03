@@ -7,7 +7,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -28,7 +27,6 @@ import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.presenter.data.ReaderReadinessTracker
 import com.quran.labs.androidquran.ui.helpers.QuranNavigator
 import com.quran.labs.androidquran.util.QuranSettings
-import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.mobile.collection.AyahCollectionDao
 import com.quran.mobile.collection.model.AyahCollection
 import com.quran.mobile.collection.model.AyahCollectionEntry
@@ -53,8 +51,7 @@ class CollectionDetailActivity : AppCompatActivity() {
 
   private lateinit var adapter: CollectionEntriesAdapter
   private lateinit var entriesList: RecyclerView
-  private lateinit var emptyView: TextView
-  private lateinit var headerCount: TextView
+  private lateinit var emptyView: View
   private var collectionId: Long = -1
   private var collection: AyahCollection? = null
 
@@ -77,10 +74,6 @@ class CollectionDetailActivity : AppCompatActivity() {
 
     entriesList = findViewById(R.id.entries_list)
     emptyView = findViewById(R.id.empty_entries)
-    headerCount = findViewById(R.id.entries_header_count)
-    findViewById<View>(R.id.read_collection).setOnClickListener {
-      startActivity(CollectionReadingActivity.intent(this, collectionId))
-    }
     adapter = CollectionEntriesAdapter(
       quranInfo = quranInfo,
       quranDisplayData = quranDisplayData,
@@ -131,6 +124,11 @@ class CollectionDetailActivity : AppCompatActivity() {
         true
       }
 
+      R.id.action_read_collection -> {
+        startActivity(CollectionReadingActivity.intent(this, collectionId))
+        true
+      }
+
       R.id.action_rename_collection -> {
         collection?.let {
           CollectionDialogs.showRenameCollection(this, collectionDao, it)
@@ -165,7 +163,6 @@ class CollectionDetailActivity : AppCompatActivity() {
         launch {
           collectionDao.entriesFlow(collectionId).collect { entries ->
             adapter.submitList(entries)
-            headerCount.text = QuranUtils.getLocalizedNumber(entries.size)
             emptyView.visibility = if (entries.isEmpty()) View.VISIBLE else View.GONE
           }
         }

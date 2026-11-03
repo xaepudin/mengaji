@@ -31,7 +31,6 @@ class CollectionLayoutTest {
   fun `inflates the collections tab`() {
     val view = inflater.inflate(R.layout.fragment_collections, null)
     assertThat(view.findViewById<View>(R.id.collections_list)).isNotNull()
-    assertThat(view.findViewById<View>(R.id.collections_header_count)).isNotNull()
     assertThat(view.findViewById<View>(R.id.new_collection)).isNotNull()
   }
 
@@ -42,7 +41,6 @@ class CollectionLayoutTest {
 
     val detail = inflater.inflate(R.layout.activity_collection_detail, null)
     assertThat(detail.findViewById<View>(R.id.entries_list)).isNotNull()
-    assertThat(detail.findViewById<View>(R.id.read_collection)).isNotNull()
   }
 
   @Test

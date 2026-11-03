@@ -178,8 +178,6 @@
 
   <!-- Collections -->
   <string name="quran_collections">Collections</string>
-  <string name="collection_list_header">Your collections</string>
-  <string name="collection_entries_header">Entries</string>
   <string name="collection_read">Read</string>
   <string name="collection_reading">Reading</string>
   <string name="collection_reading_empty">There are no ayahs to read in this collection.</string>
