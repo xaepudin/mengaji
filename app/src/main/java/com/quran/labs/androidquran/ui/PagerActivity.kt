@@ -817,10 +817,16 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
             WindowInsetsCompat.Type.navigationBars()
       )
     } else {
-      windowInsetsController.hide(
-        WindowInsetsCompat.Type.statusBars() or
-            WindowInsetsCompat.Type.navigationBars()
-      )
+      if (quranSettings.isKeepNavigationBarVisible()) {
+        // Hide the status bar but leave the system navigation bar in place.
+        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
+        windowInsetsController.show(WindowInsetsCompat.Type.navigationBars())
+      } else {
+        windowInsetsController.hide(
+          WindowInsetsCompat.Type.statusBars() or
+              WindowInsetsCompat.Type.navigationBars()
+        )
+      }
       windowInsetsController.systemBarsBehavior =
         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
@@ -836,9 +842,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
     if (!isVisible) {
       flags = flags or (View.SYSTEM_UI_FLAG_LOW_PROFILE
-          or View.SYSTEM_UI_FLAG_FULLSCREEN
-          or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-          or View.SYSTEM_UI_FLAG_IMMERSIVE)
+          or View.SYSTEM_UI_FLAG_FULLSCREEN)
+      if (!quranSettings.isKeepNavigationBarVisible()) {
+        flags = flags or (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_IMMERSIVE)
+      }
     }
     viewPager.systemUiVisibility = flags
 
@@ -857,7 +865,13 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
         // as a fix for the aforementioned point, make either one's visibility suggest
         // visibility (instead of requiring both to agree).
-        val isVisible = isStatusBarVisible || isNavigationBarVisible
+        val isVisible = if (quranSettings.isKeepNavigationBarVisible()) {
+          // The navigation bar is intentionally always present in this mode, so only the
+          // status bar should drive the auto-hiding reader toolbar.
+          isStatusBarVisible
+        } else {
+          isStatusBarVisible || isNavigationBarVisible
+        }
 
         animateToolBar(isVisible)
         insets

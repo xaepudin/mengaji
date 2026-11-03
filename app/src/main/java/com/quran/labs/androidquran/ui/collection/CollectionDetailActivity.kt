@@ -22,11 +22,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.QuranDataActivity
+import com.quran.data.core.QuranInfo
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.presenter.data.ReaderReadinessTracker
 import com.quran.labs.androidquran.ui.helpers.QuranNavigator
 import com.quran.labs.androidquran.util.QuranSettings
+import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.mobile.collection.AyahCollectionDao
 import com.quran.mobile.collection.model.AyahCollection
 import com.quran.mobile.collection.model.AyahCollectionEntry
@@ -41,6 +43,7 @@ import kotlinx.coroutines.launch
 class CollectionDetailActivity : AppCompatActivity() {
 
   @Inject lateinit var collectionDao: AyahCollectionDao
+  @Inject lateinit var quranInfo: QuranInfo
   @Inject lateinit var quranDisplayData: QuranDisplayData
   @Inject lateinit var quranNavigatorFactory: QuranNavigator.Factory
   @Inject lateinit var quranSettings: QuranSettings
@@ -51,6 +54,7 @@ class CollectionDetailActivity : AppCompatActivity() {
   private lateinit var adapter: CollectionEntriesAdapter
   private lateinit var entriesList: RecyclerView
   private lateinit var emptyView: TextView
+  private lateinit var headerCount: TextView
   private var collectionId: Long = -1
   private var collection: AyahCollection? = null
 
@@ -73,7 +77,12 @@ class CollectionDetailActivity : AppCompatActivity() {
 
     entriesList = findViewById(R.id.entries_list)
     emptyView = findViewById(R.id.empty_entries)
+    headerCount = findViewById(R.id.entries_header_count)
+    findViewById<View>(R.id.read_collection).setOnClickListener {
+      startActivity(CollectionReadingActivity.intent(this, collectionId))
+    }
     adapter = CollectionEntriesAdapter(
+      quranInfo = quranInfo,
       quranDisplayData = quranDisplayData,
       onClick = ::openEntry,
       onRename = { entry ->
@@ -156,6 +165,7 @@ class CollectionDetailActivity : AppCompatActivity() {
         launch {
           collectionDao.entriesFlow(collectionId).collect { entries ->
             adapter.submitList(entries)
+            headerCount.text = QuranUtils.getLocalizedNumber(entries.size)
             emptyView.visibility = if (entries.isEmpty()) View.VISIBLE else View.GONE
           }
         }

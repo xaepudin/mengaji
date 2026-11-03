@@ -3,39 +3,55 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
+    android:background="@drawable/quran_row_background"
     android:clickable="true"
     android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="72dp"
     android:orientation="horizontal"
     android:paddingStart="16dp">
+
+  <TextView
+      android:id="@+id/entry_number"
+      android:layout_width="48dp"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      android:textColor="@color/sura_number_color"
+      android:textSize="20sp" />
 
   <LinearLayout
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_gravity="center_vertical"
+      android:layout_marginStart="8dp"
       android:layout_weight="1"
       android:orientation="vertical"
-      android:paddingTop="14dp"
-      android:paddingEnd="8dp"
-      android:paddingBottom="14dp">
+      android:paddingTop="10dp"
+      android:paddingEnd="4dp"
+      android:paddingBottom="10dp">
 
     <TextView
         android:id="@+id/entry_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textAppearance="@style/TitleText" />
 
     <TextView
         android:id="@+id/entry_range"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="@color/text_hint_color"
+        android:textColor="@color/sura_details_color"
         android:textSize="14sp" />
 
   </LinearLayout>
+
+  <TextView
+      android:id="@+id/entry_page"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="4dp"
+      android:textColor="@color/sura_details_color"
+      android:textSize="14sp" />
 
   <ImageView
       android:id="@+id/drag_handle"
@@ -49,7 +65,7 @@
 
   <ImageButton
       android:id="@+id/entry_options"
-      android:layout_width="48dp"
+      android:layout_width="40dp"
       android:layout_height="48dp"
       android:layout_gravity="center_vertical"
       android:background="?attr/selectableItemBackgroundBorderless"

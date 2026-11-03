@@ -34,6 +34,19 @@ class LafziSearchEngine(private val database: SQLiteDatabase) {
   }
 
   /**
+   * Loads the Arabic text for the given global ayah ids. Used by the collection reading screen,
+   * which needs text without running a search.
+   */
+  fun loadAyahTexts(ids: List<Int>): List<AyahText> {
+    val results = ArrayList<AyahText>(ids.size)
+    for (id in ids) {
+      val ayah = loadAyah(id, isVocal = true) ?: continue
+      results += AyahText(ayah.id, ayah.sura, ayah.ayah, ayah.displayText)
+    }
+    return results
+  }
+
+  /**
    * Mobile keyboards often turn straight apostrophes into typographic ones. Lafzi's phonetic
    * encoding treats an apostrophe as hamzah, so normalise the common variants before deciding
    * whether the query is Latin or Arabic.

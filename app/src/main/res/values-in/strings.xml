@@ -126,6 +126,11 @@
 
   <!-- Collections -->
   <string name="quran_collections">Koleksi</string>
+  <string name="collection_list_header">Koleksi Anda</string>
+  <string name="collection_entries_header">Entri</string>
+  <string name="collection_read">Baca</string>
+  <string name="collection_reading">Membaca</string>
+  <string name="collection_reading_empty">Tidak ada ayat untuk dibaca di koleksi ini.</string>
   <string name="collection_new">Koleksi baru</string>
   <string name="collection_name_hint">Nama koleksi</string>
   <string name="collection_name_required">Masukkan nama koleksi</string>
@@ -158,6 +163,8 @@
   <string name="appearance">Tampilan</string>
   <string name="prefs_volume_key_navigation_title">Navigasi tombol volume</string>
   <string name="prefs_volume_key_navigation_summary">Navigasi antar halaman menggunakan tombol volume</string>
+  <string name="prefs_keep_navigation_bar_title">Selalu tampilkan bilah navigasi</string>
+  <string name="prefs_keep_navigation_bar_summary">Tetap tampilkan bilah navigasi sistem saat membaca</string>
   <string name="prefs_category_reading">Pengaturan Membaca</string>
   <string name="prefs_category_translation">Pengaturan Terjemahan</string>
   <string name="prefs_category_display_settings">Pengaturan Tampilan</string>

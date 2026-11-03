@@ -64,6 +64,15 @@ class LafziSearchRepositoryTest {
   }
 
   @Test
+  fun `loads ayah texts by id for the collection reading screen`() = runBlocking {
+    val texts = repository.ayahs(listOf(1, 6222))
+
+    assertThat(texts.map { it.sura to it.ayah })
+      .containsExactly(1 to 1, 112 to 1).inOrder()
+    assertThat(texts.first().text).isNotEmpty()
+  }
+
+  @Test
   fun `query shorter than three characters returns no results`() = runBlocking {
     assertThat(repository.search("ab", isVocal = true)).isEmpty()
   }

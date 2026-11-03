@@ -103,6 +103,14 @@
         android:summary="@string/prefs_volume_key_navigation_summary"
         android:title="@string/prefs_volume_key_navigation_title"
         app:iconSpaceReserved="false"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/prefs_keep_navigation_bar"
+        android:persistent="true"
+        android:summary="@string/prefs_keep_navigation_bar_summary"
+        android:title="@string/prefs_keep_navigation_bar_title"
+        app:iconSpaceReserved="false"/>
   </PreferenceCategory>
 
   <PreferenceCategory

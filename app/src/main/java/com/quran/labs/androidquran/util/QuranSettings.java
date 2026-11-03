@@ -30,6 +30,7 @@ public class QuranSettings implements PageThemeSettings {
   private static final String PREFS_FILE = "com.quran.labs.androidquran.per_installation";
   private static final String PREF_AYAH_SEARCH_VOCAL = "ayah_search_vocal";
   private static final String PREF_AYAH_SEARCH_SHOW_TRANSLATION = "ayah_search_show_translation";
+  private static final String PREF_KEEP_NAVIGATION_BAR = "keepNavigationBarVisible";
 
   private static QuranSettings instance;
 
@@ -73,6 +74,14 @@ public class QuranSettings implements PageThemeSettings {
 
   public boolean navigateWithVolumeKeys() {
     return prefs.getBoolean(Constants.PREF_USE_VOLUME_KEY_NAV, false);
+  }
+
+  public boolean isKeepNavigationBarVisible() {
+    return prefs.getBoolean(PREF_KEEP_NAVIGATION_BAR, false);
+  }
+
+  public void setKeepNavigationBarVisible(boolean keepVisible) {
+    prefs.edit().putBoolean(PREF_KEEP_NAVIGATION_BAR, keepVisible).apply();
   }
 
   public boolean shouldStream() {

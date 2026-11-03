@@ -10,6 +10,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.quran.common.upgrade.PreferencesUpgrade
 import com.quran.data.model.PageAppearance
+import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.base.TestApplication
 import com.quran.labs.androidquran.data.Constants
 import com.quran.mobile.feature.pagetheme.PageThemeConstants
@@ -46,6 +47,17 @@ class ReaderThemeTest {
     perInstallationPreferences.edit().clear().commit()
     QuranSettings.setInstance(null)
     Resources.getSystem().updateConfiguration(originalSystemConfiguration, Resources.getSystem().displayMetrics)
+  }
+
+  @Test fun `keep navigation bar preference uses the settings key`() {
+    val settings = QuranSettings.getInstance(context)
+    val key = context.getString(R.string.prefs_keep_navigation_bar)
+
+    preferences.edit().remove(key).commit()
+    assertThat(settings.isKeepNavigationBarVisible()).isFalse()
+
+    preferences.edit().putBoolean(key, true).commit()
+    assertThat(settings.isKeepNavigationBarVisible()).isTrue()
   }
 
   @Test fun `light pages use their own background and dark pages use the night sliders`() {

@@ -23,6 +23,7 @@ import com.quran.labs.androidquran.service.AudioService
 import com.quran.labs.androidquran.service.QuranDownloadService
 import com.quran.labs.androidquran.ui.BookmarkListActivity
 import com.quran.labs.androidquran.ui.collection.CollectionDetailActivity
+import com.quran.labs.androidquran.ui.collection.CollectionReadingActivity
 import com.quran.labs.androidquran.ui.collection.CollectionsFragment
 import com.quran.labs.androidquran.ui.TranslationManagerActivity
 import com.quran.labs.androidquran.ui.fragment.AddTagDialog
@@ -83,6 +84,7 @@ interface ApplicationComponent : QuranApplicationComponent {
   fun inject(bookmarkListActivity: BookmarkListActivity)
   fun inject(collectionsFragment: CollectionsFragment)
   fun inject(collectionDetailActivity: CollectionDetailActivity)
+  fun inject(collectionReadingActivity: CollectionReadingActivity)
 
   // fragments
   fun inject(bookmarksFragment: BookmarksFragment)

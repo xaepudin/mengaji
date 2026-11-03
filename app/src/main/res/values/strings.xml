@@ -178,6 +178,11 @@
 
   <!-- Collections -->
   <string name="quran_collections">Collections</string>
+  <string name="collection_list_header">Your collections</string>
+  <string name="collection_entries_header">Entries</string>
+  <string name="collection_read">Read</string>
+  <string name="collection_reading">Reading</string>
+  <string name="collection_reading_empty">There are no ayahs to read in this collection.</string>
   <string name="collection_new">New collection</string>
   <string name="collection_name_hint">Collection name</string>
   <string name="collection_name_required">Enter a collection name</string>
@@ -210,6 +215,8 @@
   <string name="appearance">App theme</string>
   <string name="prefs_volume_key_navigation_title">Volume key navigation</string>
   <string name="prefs_volume_key_navigation_summary">Navigate between pages using volume keys</string>
+  <string name="prefs_keep_navigation_bar_title">Keep navigation bar visible</string>
+  <string name="prefs_keep_navigation_bar_summary">Keep the system navigation bar visible while reading</string>
   <string name="prefs_category_reading">Reading Preferences</string>
   <string name="prefs_category_translation">Translation Preferences</string>
   <string name="prefs_category_display_settings">Display Settings</string>

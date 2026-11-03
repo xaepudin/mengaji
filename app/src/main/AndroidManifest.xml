@@ -113,6 +113,11 @@
         android:exported="false" />
 
     <activity
+        android:name=".ui.collection.CollectionReadingActivity"
+        android:theme="@style/QuranToolBarDayNight"
+        android:exported="false" />
+
+    <activity
         android:name=".SearchActivity"
         android:launchMode="singleTop"
         android:theme="@style/QuranToolBarDayNight"

@@ -41,6 +41,10 @@ class LafziSearchRepository @Inject constructor(
       searchEngine().search(query, isVocal)
     }
 
+  suspend fun ayahs(ids: List<Int>): List<AyahText> = withContext(Dispatchers.IO) {
+    if (ids.isEmpty()) emptyList() else searchEngine().loadAyahTexts(ids)
+  }
+
   private fun searchEngine(): LafziSearchEngine {
     engine?.let { return it }
 

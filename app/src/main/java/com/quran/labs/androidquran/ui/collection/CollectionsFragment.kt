@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.R
+import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.mobile.collection.AyahCollectionDao
 import com.quran.mobile.collection.model.AyahCollection
 import dev.zacsweers.metro.Inject
@@ -46,6 +48,7 @@ class CollectionsFragment : Fragment() {
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.collections_list)
     val emptyView = view.findViewById<View>(R.id.empty_collections)
+    val headerCount = view.findViewById<TextView>(R.id.collections_header_count)
     val adapter = CollectionsAdapter(
       onClick = { collection ->
         startActivity(CollectionDetailActivity.intent(requireContext(), collection.id))
@@ -73,7 +76,10 @@ class CollectionsFragment : Fragment() {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
         collectionDao.collectionsFlow().collect { collections ->
           adapter.submitList(collections)
-          emptyView.visibility = if (collections.isEmpty()) View.VISIBLE else View.GONE
+          headerCount.text = QuranUtils.getLocalizedNumber(collections.size)
+          val isEmpty = collections.isEmpty()
+          emptyView.visibility = if (isEmpty) View.VISIBLE else View.GONE
+          recyclerView.visibility = if (isEmpty) View.GONE else View.VISIBLE
         }
       }
     }

@@ -7,11 +7,14 @@ import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.quran.data.core.QuranInfo
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.QuranDisplayData
+import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.mobile.collection.model.AyahCollectionEntry
 
 class CollectionEntriesAdapter(
+  private val quranInfo: QuranInfo,
   private val quranDisplayData: QuranDisplayData,
   private val onClick: (AyahCollectionEntry) -> Unit,
   private val onRename: (AyahCollectionEntry) -> Unit,
@@ -45,12 +48,16 @@ class CollectionEntriesAdapter(
 
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val entry = items[position]
+    holder.number.text = QuranUtils.getLocalizedNumber(position + 1)
     holder.name.text = entry.name
     holder.range.text = collectionRangeLabel(
       holder.itemView.context,
       quranDisplayData,
       entry.start,
       entry.end
+    )
+    holder.page.text = QuranUtils.getLocalizedNumber(
+      quranInfo.getPageFromSuraAyah(entry.startSura, entry.startAyah)
     )
     holder.itemView.setOnClickListener { onClick(entry) }
     holder.options.setOnClickListener { anchor ->
@@ -79,8 +86,10 @@ class CollectionEntriesAdapter(
   override fun getItemCount(): Int = items.size
 
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val number: TextView = itemView.findViewById(R.id.entry_number)
     val name: TextView = itemView.findViewById(R.id.entry_name)
     val range: TextView = itemView.findViewById(R.id.entry_range)
+    val page: TextView = itemView.findViewById(R.id.entry_page)
     val options: ImageButton = itemView.findViewById(R.id.entry_options)
   }
 }

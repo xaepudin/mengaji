@@ -15,6 +15,59 @@
       app:title="@string/quran_collections"
       app:titleTextColor="@color/toolbar_text" />
 
+  <LinearLayout
+      android:id="@+id/entries_header"
+      android:layout_width="match_parent"
+      android:layout_height="56dp"
+      android:background="@drawable/list_header_background"
+      android:gravity="center_vertical"
+      android:orientation="horizontal"
+      android:paddingStart="16dp"
+      android:paddingEnd="4dp">
+
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_collection_24"
+        app:tint="@color/header_text_color" />
+
+    <TextView
+        android:id="@+id/entries_header_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:text="@string/collection_entries_header"
+        android:textColor="@color/header_text_color"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/entries_header_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:textColor="@color/sura_number_color"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/read_collection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:drawableStart="@drawable/ic_collection_read_24"
+        android:drawablePadding="6dp"
+        android:drawableTint="?attr/quranAccent"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:text="@string/collection_read"
+        android:textColor="?attr/quranAccent"
+        android:textSize="14sp" />
+
+  </LinearLayout>
+
   <FrameLayout
       android:layout_width="match_parent"
       android:layout_height="0dp"
@@ -28,16 +81,33 @@
         android:paddingTop="4dp"
         android:paddingBottom="16dp" />
 
-    <TextView
+    <LinearLayout
         android:id="@+id/empty_entries"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
+        android:orientation="vertical"
         android:padding="32dp"
-        android:text="@string/collection_entries_empty"
-        android:textColor="@color/text_hint_color"
-        android:textSize="15sp"
-        android:visibility="gone" />
+        android:visibility="gone">
+
+      <ImageView
+          android:layout_width="64dp"
+          android:layout_height="64dp"
+          android:alpha="0.35"
+          android:contentDescription="@null"
+          android:src="@drawable/ic_collection_read_24"
+          app:tint="@color/text_hint_color" />
+
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="12dp"
+          android:gravity="center"
+          android:text="@string/collection_entries_empty"
+          android:textColor="@color/text_hint_color"
+          android:textSize="15sp" />
+
+    </LinearLayout>
 
   </FrameLayout>
 
