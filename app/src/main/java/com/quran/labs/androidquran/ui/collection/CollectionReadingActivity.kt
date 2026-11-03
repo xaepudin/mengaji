@@ -25,6 +25,7 @@ import com.quran.labs.androidquran.ayahsearch.AyahSearchAdapter
 import com.quran.labs.androidquran.ayahsearch.AyahSearchResult
 import com.quran.labs.androidquran.ayahsearch.AyahSearchTranslationRepository
 import com.quran.labs.androidquran.ayahsearch.LafziSearchRepository
+import com.quran.labs.androidquran.ayahsearch.PageImageSnippetLoader
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.presenter.data.ReaderReadinessTracker
 import com.quran.labs.androidquran.ui.helpers.QuranNavigator
@@ -48,6 +49,7 @@ class CollectionReadingActivity : AppCompatActivity() {
 
   @Inject lateinit var collectionDao: AyahCollectionDao
   @Inject lateinit var lafziSearchRepository: LafziSearchRepository
+  @Inject lateinit var pageSnippetLoader: PageImageSnippetLoader
   @Inject lateinit var translationRepository: AyahSearchTranslationRepository
   @Inject lateinit var quranInfo: QuranInfo
   @Inject lateinit var quranDisplayData: QuranDisplayData
@@ -86,6 +88,8 @@ class CollectionReadingActivity : AppCompatActivity() {
       context = this,
       quranInfo = quranInfo,
       quranDisplayData = quranDisplayData,
+      pageSnippetLoader = pageSnippetLoader,
+      scope = lifecycleScope,
       onResultClick = ::openAyah
     )
     readingList.layoutManager = LinearLayoutManager(this)

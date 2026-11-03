@@ -7,6 +7,7 @@ import android.text.style.BackgroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
@@ -15,11 +16,15 @@ import com.quran.data.core.QuranInfo
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.ui.util.TypefaceManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class AyahSearchAdapter(
   private val context: Context,
   private val quranInfo: QuranInfo,
   private val quranDisplayData: QuranDisplayData,
+  private val pageSnippetLoader: PageImageSnippetLoader,
+  private val scope: CoroutineScope,
   private val onResultClick: (AyahSearchResult) -> Unit
 ) : RecyclerView.Adapter<AyahSearchAdapter.ViewHolder>() {
 
@@ -27,6 +32,9 @@ class AyahSearchAdapter(
   private val highlightColor =
     ContextCompat.getColor(context, R.color.ayah_search_highlight)
   private val quranTypeface by lazy { TypefaceManager.getUthmaniTypeface(context) }
+  private val cardContentWidth: Int by lazy {
+    context.resources.displayMetrics.widthPixels - dp(CARD_HORIZONTAL_INSET_DP)
+  }
 
   fun submitItems(results: List<AyahSearchResult>) {
     items.clear()
@@ -50,16 +58,42 @@ class AyahSearchAdapter(
 
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val result = items[position]
+    val page = quranInfo.getPageFromSuraAyah(result.sura, result.ayah)
     holder.metadata.text = context.getString(
       R.string.ayah_search_result_meta,
       result.sura,
       quranDisplayData.getSuraName(context, result.sura, false),
       result.ayah,
-      quranInfo.getPageFromSuraAyah(result.sura, result.ayah)
+      page
     )
 
+    // Show the font-rendered ayah while the page image crop loads, and keep it as a fallback if
+    // the page image or its ayah coordinates have not been downloaded.
+    holder.arabic.visibility = View.VISIBLE
     holder.arabic.typeface = quranTypeface
     holder.arabic.text = buildArabicText(result)
+    holder.arabicImage.visibility = View.GONE
+    holder.arabicImage.setImageDrawable(null)
+    holder.arabicImage.colorFilter = null
+    holder.arabicImage.contentDescription = null
+
+    val imageKey = "$page:${result.sura}:${result.ayah}"
+    holder.arabicImage.tag = imageKey
+    scope.launch {
+      val bitmap = pageSnippetLoader.load(
+        page = page,
+        sura = result.sura,
+        ayah = result.ayah,
+        targetWidth = cardContentWidth
+      )
+      if (bitmap != null && holder.arabicImage.tag == imageKey) {
+        holder.arabicImage.setImageBitmap(bitmap)
+        holder.arabicImage.colorFilter = pageSnippetLoader.nightModeFilter(holder.itemView.context)
+        holder.arabicImage.contentDescription = result.arabicText
+        holder.arabicImage.visibility = View.VISIBLE
+        holder.arabic.visibility = View.GONE
+      }
+    }
 
     val translation = result.translation
     if (translation.isNullOrEmpty()) {
@@ -100,9 +134,19 @@ class AyahSearchAdapter(
     return spannable
   }
 
+  private fun dp(value: Int): Int {
+    return (value * context.resources.displayMetrics.density).toInt()
+  }
+
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val metadata: TextView = itemView.findViewById(R.id.result_metadata)
     val arabic: TextView = itemView.findViewById(R.id.result_arabic)
+    val arabicImage: ImageView = itemView.findViewById(R.id.result_arabic_image)
     val translation: TextView = itemView.findViewById(R.id.result_translation)
+  }
+
+  private companion object {
+    // 16dp card margins on both sides + 16dp inner padding on both sides.
+    const val CARD_HORIZONTAL_INSET_DP = 64
   }
 }
