@@ -117,6 +117,7 @@
   <string name="ayah_search_query_too_short">Ketik minimal 3 karakter</string>
   <string name="ayah_search_error">Pencarian gagal. Silakan coba lagi.</string>
   <string name="ayah_search_result_meta">%1$d. %2$s · Ayat %3$d · Halaman %4$d</string>
+  <string name="ayah_search_result_meta_no_page">%1$d. %2$s · Ayat %3$d</string>
   <string name="ayah_search_vocal">Pencarian berharakat</string>
   <string name="ayah_search_show_translation">Tampilkan terjemahan</string>
   <plurals name="ayah_search_result_count">
@@ -129,6 +130,10 @@
   <string name="collection_read">Baca</string>
   <string name="collection_reading">Membaca</string>
   <string name="collection_reading_empty">Tidak ada ayat untuk dibaca di koleksi ini.</string>
+  <string name="collection_reading_show_translation">Tampilkan terjemahan</string>
+  <string name="collection_reading_hide_translation">Sembunyikan terjemahan</string>
+  <string name="collection_reading_show_dividers">Tampilkan pembatas entri</string>
+  <string name="collection_reading_hide_dividers">Sembunyikan pembatas entri</string>
   <string name="collection_new">Koleksi baru</string>
   <string name="collection_name_hint">Nama koleksi</string>
   <string name="collection_name_required">Masukkan nama koleksi</string>

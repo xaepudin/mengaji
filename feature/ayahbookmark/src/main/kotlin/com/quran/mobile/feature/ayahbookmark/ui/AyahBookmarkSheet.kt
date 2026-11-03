@@ -13,7 +13,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,12 +28,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.quran.mobile.feature.ayahbookmark.R
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkEvent
+import com.quran.mobile.feature.ayahbookmark.state.AyahCollectionChoice
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkState
 
 @Composable
 internal fun AyahBookmarkSheet(
   state: AyahBookmarkState,
-  onAddToCollection: () -> Unit,
+  collections: List<AyahCollectionChoice>,
+  onCollectionSelected: (AyahCollectionChoice) -> Unit,
+  onCreateCollection: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
   val eventSink = state.eventSink
@@ -37,6 +45,8 @@ internal fun AyahBookmarkSheet(
   val suraAyahName = remember(context, state.ayah) {
     state.suraAyahNameResolver(context, state.ayah)
   }
+  var creatingCollection by remember { mutableStateOf(false) }
+  var newCollectionName by remember { mutableStateOf("") }
 
   Column(
     modifier = modifier
@@ -117,10 +127,50 @@ internal fun AyahBookmarkSheet(
 
       HorizontalDivider(modifier = Modifier.padding(top = 14.dp))
 
-      AddToCollectionRow(
-        onClick = onAddToCollection,
-        modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+      Text(
+        text = stringResource(R.string.ayahbookmark_collections_header).uppercase(),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
       )
+    }
+
+    LazyColumn(
+      modifier = Modifier
+        .weight(1f, fill = false)
+        .padding(horizontal = 18.dp)
+    ) {
+      items(collections, key = { it.id }) { collection ->
+        CollectionChoiceRow(
+          collection = collection,
+          onClick = { onCollectionSelected(collection) }
+        )
+      }
+    }
+
+    Column {
+      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+      if (creatingCollection) {
+        NewCollectionInputRow(
+          name = newCollectionName,
+          isSubmitting = false,
+          nameError = null,
+          onNameChange = { newCollectionName = it },
+          onCancel = {
+            creatingCollection = false
+            newCollectionName = ""
+          },
+          onCreate = {
+            val name = newCollectionName.trim()
+            if (name.isNotEmpty()) {
+              onCreateCollection(name)
+            }
+          }
+        )
+      } else {
+        NewCollectionTriggerRow(onClick = { creatingCollection = true })
+      }
     }
   }
 }

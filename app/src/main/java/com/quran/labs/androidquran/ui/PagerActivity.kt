@@ -110,7 +110,7 @@ import com.quran.labs.androidquran.ui.helpers.AyahSelectedListener
 import com.quran.labs.androidquran.ui.helpers.AyahTracker
 import com.quran.labs.androidquran.ui.helpers.JumpDestination
 import com.quran.labs.androidquran.ui.helpers.QuranDisplayHelper
-import com.quran.labs.androidquran.ui.collection.CollectionDialogs
+import com.quran.labs.androidquran.ui.collection.collectionRangeLabel
 import com.quran.labs.androidquran.ui.helpers.QuranNavigator
 import com.quran.labs.androidquran.ui.helpers.QuranPage
 import com.quran.labs.androidquran.ui.helpers.QuranPageAdapter
@@ -140,6 +140,7 @@ import com.quran.mobile.feature.audiobar.AudioBarWrapper
 import com.quran.mobile.feature.audiobar.presenter.AudioBarEventRepository
 import com.quran.mobile.collection.AyahCollectionDao
 import com.quran.mobile.feature.ayahbookmark.AyahBookmarkWrapper
+import com.quran.mobile.feature.ayahbookmark.state.AyahCollectionChoice
 import com.quran.mobile.feature.ayahbookmark.di.AyahBookmarkWrapperInjector
 import com.quran.mobile.feature.ayahbookmark.readingbookmark.ReadingBookmarkSheetWrapper
 import com.quran.mobile.feature.ayahbookmark.readingbookmark.di.ReadingBookmarkSheetWrapperInjector
@@ -1911,26 +1912,22 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     val ayahBookmarkWrapper = AyahBookmarkWrapper(
       context = this,
       currentAyah = suraAyah,
+      collectionChoicesFlow = collectionDao.collectionsFlow().map { collections ->
+        collections.map { collection ->
+          AyahCollectionChoice(collection.id, collection.name, collection.entryCount)
+        }
+      },
       onDismissed = { isBookmarked ->
         overlay.removeAllViews()
         overlay.visibility = View.GONE
         toggleActionBarVisibility(true)
         updateAyahBookmark(suraAyah, isBookmarked)
       },
-      onAddToCollection = {
-        CollectionDialogs.showAddToCollection(
-          this@PagerActivity,
-          collectionDao,
-          quranDisplayData,
-          suraAyah,
-          endSuraAyah
-        ) { collection ->
-          Toast.makeText(
-            this@PagerActivity,
-            getString(R.string.collection_added, collection.name),
-            Toast.LENGTH_SHORT
-          ).show()
-        }
+      onAddToCollection = { id, name ->
+        addAyahToCollection(id, name, suraAyah, endSuraAyah)
+      },
+      onCreateCollection = { name ->
+        createCollectionAndAdd(name, suraAyah, endSuraAyah)
       }
     )
     overlay.removeAllViews()
@@ -1941,6 +1938,36 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     )
     overlay.visibility = View.VISIBLE
     toggleActionBarVisibility(false)
+  }
+
+  private fun addAyahToCollection(
+    collectionId: Long,
+    collectionName: String,
+    start: SuraAyah,
+    end: SuraAyah
+  ) {
+    lifecycleScope.launch {
+      val entryName = collectionRangeLabel(this@PagerActivity, quranDisplayData, start, end)
+      collectionDao.addEntry(collectionId, entryName, start, end)
+      Toast.makeText(
+        this@PagerActivity,
+        getString(R.string.collection_added, collectionName),
+        Toast.LENGTH_SHORT
+      ).show()
+    }
+  }
+
+  private fun createCollectionAndAdd(name: String, start: SuraAyah, end: SuraAyah) {
+    lifecycleScope.launch {
+      val collectionId = collectionDao.createCollection(name)
+      val entryName = collectionRangeLabel(this@PagerActivity, quranDisplayData, start, end)
+      collectionDao.addEntry(collectionId, entryName, start, end)
+      Toast.makeText(
+        this@PagerActivity,
+        getString(R.string.collection_added, name),
+        Toast.LENGTH_SHORT
+      ).show()
+    }
   }
 
   fun updatePlayOptions(

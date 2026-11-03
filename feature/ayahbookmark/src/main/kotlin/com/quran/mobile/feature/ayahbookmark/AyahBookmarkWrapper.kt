@@ -36,17 +36,21 @@ import com.quran.mobile.feature.ayahbookmark.di.AyahBookmarkWrapperInjector
 import com.quran.mobile.feature.ayahbookmark.presenter.AyahBookmarkPresenter
 import com.quran.mobile.feature.ayahbookmark.readingbookmark.ReadingBookmarkAction
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkEvent
+import com.quran.mobile.feature.ayahbookmark.state.AyahCollectionChoice
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkState
 import com.quran.mobile.feature.ayahbookmark.ui.AyahBookmark
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlin.time.Duration.Companion.milliseconds
 
 class AyahBookmarkWrapper(
   context: Context,
   private val currentAyah: SuraAyah,
+  private val collectionChoicesFlow: Flow<List<AyahCollectionChoice>>,
   private val onDismissed: (isBookmarked: Boolean) -> Unit,
-  private val onAddToCollection: (SuraAyah) -> Unit
+  private val onAddToCollection: (id: Long, name: String) -> Unit,
+  private val onCreateCollection: (name: String) -> Unit
 ) : FrameLayout(context) {
 
   @Inject
@@ -56,7 +60,12 @@ class AyahBookmarkWrapper(
   lateinit var readingBookmarkUpdater: ReadingBookmarkUpdater
 
   private var pendingReadingBookmarkAction: ReadingBookmarkAction? = null
-  private var addToCollectionRequested = false
+  private var pendingCollectionAction: PendingCollectionAction? = null
+
+  private sealed interface PendingCollectionAction {
+    data class Add(val id: Long, val name: String) : PendingCollectionAction
+    data class Create(val name: String) : PendingCollectionAction
+  }
 
   private val actionSink: (ReadingBookmarkAction) -> Unit = { pendingReadingBookmarkAction = it }
 
@@ -74,11 +83,13 @@ class AyahBookmarkWrapper(
   }
 
   private fun notifyDismissed(state: AyahBookmarkState) {
-    val wantsCollection = addToCollectionRequested
-    addToCollectionRequested = false
+    val collectionAction = pendingCollectionAction
+    pendingCollectionAction = null
     onDismissed(state.isSaved)
-    if (wantsCollection) {
-      onAddToCollection(currentAyah)
+    when (collectionAction) {
+      is PendingCollectionAction.Add -> onAddToCollection(collectionAction.id, collectionAction.name)
+      is PendingCollectionAction.Create -> onCreateCollection(collectionAction.name)
+      null -> Unit
     }
 
     when (val action = pendingReadingBookmarkAction) {
@@ -103,6 +114,7 @@ class AyahBookmarkWrapper(
       }
     }
     val state by stateFlow.collectAsState()
+    val collectionChoices by collectionChoicesFlow.collectAsState(initial = emptyList())
 
     val scaffoldState = rememberBottomSheetScaffoldState(
       bottomSheetState = rememberStandardBottomSheetState(
@@ -156,8 +168,14 @@ class AyahBookmarkWrapper(
         sheetContent = {
           AyahBookmark(
             state = state,
-            onAddToCollection = {
-              addToCollectionRequested = true
+            collections = collectionChoices,
+            onCollectionSelected = { collection ->
+              pendingCollectionAction =
+                PendingCollectionAction.Add(collection.id, collection.name)
+              state.eventSink(AyahBookmarkEvent.Done)
+            },
+            onCreateCollection = { name ->
+              pendingCollectionAction = PendingCollectionAction.Create(name)
               state.eventSink(AyahBookmarkEvent.Done)
             },
             modifier = Modifier

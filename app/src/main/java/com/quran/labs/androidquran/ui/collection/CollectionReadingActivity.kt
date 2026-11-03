@@ -3,6 +3,7 @@ package com.quran.labs.androidquran.ui.collection
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -61,6 +62,8 @@ class CollectionReadingActivity : AppCompatActivity() {
   private lateinit var progress: ProgressBar
   private lateinit var emptyView: View
   private var collectionId: Long = -1
+  private var showTranslation = true
+  private var showEntryDividers = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
@@ -86,8 +89,11 @@ class CollectionReadingActivity : AppCompatActivity() {
       context = this,
       quranInfo = quranInfo,
       quranDisplayData = quranDisplayData,
+      showPageNumber = false,
       onResultClick = ::openAyah
     )
+    adapter.showTranslation = showTranslation
+    adapter.showEntryDividers = showEntryDividers
     readingList.layoutManager = LinearLayoutManager(this)
     readingList.adapter = adapter
 
@@ -113,10 +119,49 @@ class CollectionReadingActivity : AppCompatActivity() {
     loadCollection()
   }
 
+  override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    menuInflater.inflate(R.menu.collection_reading_menu, menu)
+    return true
+  }
+
+  override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+    menu.findItem(R.id.action_toggle_translation)?.title = getString(
+      if (showTranslation) {
+        R.string.collection_reading_hide_translation
+      } else {
+        R.string.collection_reading_show_translation
+      }
+    )
+    menu.findItem(R.id.action_toggle_dividers)?.title = getString(
+      if (showEntryDividers) {
+        R.string.collection_reading_hide_dividers
+      } else {
+        R.string.collection_reading_show_dividers
+      }
+    )
+    return super.onPrepareOptionsMenu(menu)
+  }
+
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    if (item.itemId == android.R.id.home) {
-      finish()
-      return true
+    when (item.itemId) {
+      android.R.id.home -> {
+        finish()
+        return true
+      }
+
+      R.id.action_toggle_translation -> {
+        showTranslation = !showTranslation
+        adapter.showTranslation = showTranslation
+        invalidateOptionsMenu()
+        return true
+      }
+
+      R.id.action_toggle_dividers -> {
+        showEntryDividers = !showEntryDividers
+        adapter.showEntryDividers = showEntryDividers
+        invalidateOptionsMenu()
+        return true
+      }
     }
     return super.onOptionsItemSelected(item)
   }
@@ -128,21 +173,26 @@ class CollectionReadingActivity : AppCompatActivity() {
           val collection = collectionDao.collection(collectionId)
             ?: return@withContext null
           val entries = collectionDao.entries(collectionId)
-          val ids = collectAyahIds(entries)
+          val ayahEntries = collectAyahIds(entries)
+          val ids = ayahEntries.keys.toList()
           val texts = if (ids.isEmpty()) {
             emptyList()
           } else {
             lafziSearchRepository.ayahs(ids)
           }
-          val translations = if (
-            ids.isEmpty() || !quranSettings.isAyahSearchShowTranslation()
-          ) {
+          val translations = if (ids.isEmpty()) {
             emptyMap()
           } else {
             translationRepository.translationsFor(ids)
           }
-          collection to texts.map { text ->
-            AyahSearchResult(
+          val results = ArrayList<AyahSearchResult>(texts.size)
+          val dividers = ArrayList<Boolean>(texts.size)
+          var previousEntry = -1
+          for (text in texts) {
+            val entryIndex = ayahEntries[text.ayahId] ?: -1
+            dividers += previousEntry != -1 && entryIndex != previousEntry
+            previousEntry = entryIndex
+            results += AyahSearchResult(
               ayahId = text.ayahId,
               sura = text.sura,
               ayah = text.ayah,
@@ -152,6 +202,7 @@ class CollectionReadingActivity : AppCompatActivity() {
               translation = translations[text.ayahId]
             )
           }
+          CollectionReadingData(collection, results, dividers)
         }
       } catch (exception: Exception) {
         Timber.e(exception, "Unable to load collection reading data")
@@ -163,13 +214,12 @@ class CollectionReadingActivity : AppCompatActivity() {
         return@launch
       }
 
-      val (collection, results) = loaded
-      showCollectionTitle(collection)
+      showCollectionTitle(loaded.collection)
       progress.visibility = View.GONE
-      if (results.isEmpty()) {
+      if (loaded.results.isEmpty()) {
         emptyView.visibility = View.VISIBLE
       } else {
-        adapter.submitItems(results)
+        adapter.submitItems(loaded.results, loaded.dividers)
       }
     }
   }
@@ -179,32 +229,38 @@ class CollectionReadingActivity : AppCompatActivity() {
     supportActionBar?.subtitle = getString(R.string.collection_reading)
   }
 
-  private fun collectAyahIds(entries: List<AyahCollectionEntry>): List<Int> {
-    val ids = LinkedHashSet<Int>()
-    for (entry in entries) {
+  private fun collectAyahIds(entries: List<AyahCollectionEntry>): LinkedHashMap<Int, Int> {
+    val ids = LinkedHashMap<Int, Int>()
+    entries.forEachIndexed { entryIndex, entry ->
       if (entry.startSura == entry.endSura) {
         if (entry.startAyah > entry.endAyah) {
-          continue
+          return@forEachIndexed
         }
         for (ayah in entry.startAyah..entry.endAyah) {
-          ids.add(quranInfo.getAyahId(entry.startSura, ayah))
+          ids.putIfAbsent(quranInfo.getAyahId(entry.startSura, ayah), entryIndex)
         }
       } else {
         for (ayah in entry.startAyah..quranInfo.getNumberOfAyahs(entry.startSura)) {
-          ids.add(quranInfo.getAyahId(entry.startSura, ayah))
+          ids.putIfAbsent(quranInfo.getAyahId(entry.startSura, ayah), entryIndex)
         }
         for (sura in entry.startSura + 1 until entry.endSura) {
           for (ayah in 1..quranInfo.getNumberOfAyahs(sura)) {
-            ids.add(quranInfo.getAyahId(sura, ayah))
+            ids.putIfAbsent(quranInfo.getAyahId(sura, ayah), entryIndex)
           }
         }
         for (ayah in 1..entry.endAyah) {
-          ids.add(quranInfo.getAyahId(entry.endSura, ayah))
+          ids.putIfAbsent(quranInfo.getAyahId(entry.endSura, ayah), entryIndex)
         }
       }
     }
-    return ids.toList()
+    return ids
   }
+
+  private data class CollectionReadingData(
+    val collection: AyahCollection,
+    val results: List<AyahSearchResult>,
+    val dividers: List<Boolean>
+  )
 
   private fun openAyah(result: AyahSearchResult) {
     if (canOpenReaderDirectly()) {

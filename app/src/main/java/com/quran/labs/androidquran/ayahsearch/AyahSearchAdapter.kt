@@ -20,17 +20,39 @@ class AyahSearchAdapter(
   private val context: Context,
   private val quranInfo: QuranInfo,
   private val quranDisplayData: QuranDisplayData,
+  private val showPageNumber: Boolean = true,
   private val onResultClick: (AyahSearchResult) -> Unit
-) : RecyclerView.Adapter<AyahSearchAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
   private val items = ArrayList<AyahSearchResult>()
+  private var dividerBefore: List<Boolean> = emptyList()
+  private var rows: List<Row> = emptyList()
   private val highlightColor =
     ContextCompat.getColor(context, R.color.ayah_search_highlight)
   private val quranTypeface by lazy { TypefaceManager.getMeQuranTypeface(context) }
 
-  fun submitItems(results: List<AyahSearchResult>) {
+  var showTranslation: Boolean = true
+    set(value) {
+      if (field != value) {
+        field = value
+        notifyDataSetChanged()
+      }
+    }
+
+  var showEntryDividers: Boolean = false
+    set(value) {
+      if (field != value) {
+        field = value
+        rebuildRows()
+        notifyDataSetChanged()
+      }
+    }
+
+  fun submitItems(results: List<AyahSearchResult>, dividerBefore: List<Boolean> = emptyList()) {
     items.clear()
     items.addAll(results)
+    this.dividerBefore = dividerBefore
+    rebuildRows()
     notifyDataSetChanged()
   }
 
@@ -39,30 +61,57 @@ class AyahSearchAdapter(
       return
     }
     items.clear()
+    dividerBefore = emptyList()
+    rows = emptyList()
     notifyDataSetChanged()
   }
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-    val view = LayoutInflater.from(context)
-      .inflate(R.layout.item_ayah_search_result, parent, false)
-    return ViewHolder(view)
+  override fun getItemCount(): Int = rows.size
+
+  override fun getItemViewType(position: Int): Int {
+    return if (rows[position] is Row.Divider) TYPE_DIVIDER else TYPE_RESULT
   }
 
-  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-    val result = items[position]
-    holder.metadata.text = context.getString(
-      R.string.ayah_search_result_meta,
-      result.sura,
-      quranDisplayData.getSuraName(context, result.sura, false),
-      result.ayah,
-      quranInfo.getPageFromSuraAyah(result.sura, result.ayah)
-    )
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    val inflater = LayoutInflater.from(context)
+    return if (viewType == TYPE_DIVIDER) {
+      DividerViewHolder(inflater.inflate(R.layout.item_collection_reading_divider, parent, false))
+    } else {
+      ViewHolder(inflater.inflate(R.layout.item_ayah_search_result, parent, false))
+    }
+  }
+
+  override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    val row = rows[position]
+    if (row is Row.Result && holder is ViewHolder) {
+      bindResult(holder, row.result)
+    }
+  }
+
+  private fun bindResult(holder: ViewHolder, result: AyahSearchResult) {
+    val page = quranInfo.getPageFromSuraAyah(result.sura, result.ayah)
+    holder.metadata.text = if (showPageNumber) {
+      context.getString(
+        R.string.ayah_search_result_meta,
+        result.sura,
+        quranDisplayData.getSuraName(context, result.sura, false),
+        result.ayah,
+        page
+      )
+    } else {
+      context.getString(
+        R.string.ayah_search_result_meta_no_page,
+        result.sura,
+        quranDisplayData.getSuraName(context, result.sura, false),
+        result.ayah
+      )
+    }
 
     holder.arabic.typeface = quranTypeface
     holder.arabic.text = buildArabicText(result)
 
     val translation = result.translation
-    if (translation.isNullOrEmpty()) {
+    if (!showTranslation || translation.isNullOrEmpty()) {
       holder.translation.visibility = View.GONE
     } else {
       holder.translation.visibility = View.VISIBLE
@@ -75,7 +124,16 @@ class AyahSearchAdapter(
     holder.itemView.setOnClickListener { onResultClick(result) }
   }
 
-  override fun getItemCount(): Int = items.size
+  private fun rebuildRows() {
+    rows = buildList {
+      items.forEachIndexed { index, result ->
+        if (showEntryDividers && dividerBefore.getOrElse(index) { false }) {
+          add(Row.Divider)
+        }
+        add(Row.Result(result))
+      }
+    }
+  }
 
   private fun buildArabicText(result: AyahSearchResult): CharSequence {
     val text = result.arabicText
@@ -100,9 +158,21 @@ class AyahSearchAdapter(
     return spannable
   }
 
+  private class DividerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val metadata: TextView = itemView.findViewById(R.id.result_metadata)
     val arabic: TextView = itemView.findViewById(R.id.result_arabic)
     val translation: TextView = itemView.findViewById(R.id.result_translation)
+  }
+
+  private sealed interface Row {
+    data class Result(val result: AyahSearchResult) : Row
+    data object Divider : Row
+  }
+
+  private companion object {
+    const val TYPE_RESULT = 0
+    const val TYPE_DIVIDER = 1
   }
 }

@@ -31,6 +31,7 @@ import com.quran.mobile.feature.ayahbookmark.readingbookmark.ui.ReadingBookmarkS
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkCollectionCreationState
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkCollectionItem
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkState
+import com.quran.mobile.feature.ayahbookmark.state.AyahCollectionChoice
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -40,7 +41,9 @@ import kotlin.time.Instant
 @Composable
 fun AyahBookmark(
   state: AyahBookmarkState,
-  onAddToCollection: () -> Unit = {},
+  collections: List<AyahCollectionChoice> = emptyList(),
+  onCollectionSelected: (AyahCollectionChoice) -> Unit = {},
+  onCreateCollection: (String) -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val selection = state.readingBookmarkSelection
@@ -62,7 +65,12 @@ fun AyahBookmark(
     modifier = modifier.fillMaxWidth()
   ) { target ->
     if (target == null) {
-      AyahBookmarkSheet(state = state, onAddToCollection = onAddToCollection)
+      AyahBookmarkSheet(
+        state = state,
+        collections = collections,
+        onCollectionSelected = onCollectionSelected,
+        onCreateCollection = onCreateCollection
+      )
     } else {
       ReadingBookmarkSheet(
         state = target,
