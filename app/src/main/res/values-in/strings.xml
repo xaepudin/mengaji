@@ -33,6 +33,9 @@
 
   <!-- about -->
   <string name="about_description">Quran Android adalah aplikasi Al-Qur\'an gratis yang dikembangkan berkat kontribusi banyak pihak. Kami berharap Anda berkenan mendoakan para kontributor yang telah menghadirkan aplikasi ini.</string>
+  <string name="about_original_project">Proyek asli</string>
+  <string name="about_mengaji_section">Tentang Mengaji</string>
+  <string name="about_mengaji_description">Mengaji adalah aplikasi Al-Qur\'an pribadi dan bersumber terbuka untuk belajar serta menghafal. Aplikasi ini dikembangkan dari Quran for Android dengan Mode Hifz, pencarian ayat Lafzi, koleksi ayat, dan tampilan pembaca yang baru.</string>
   <string name="about_data_sources">Sumber Data</string>
   <string name="about_images">Gambar</string>
   <string name="about_madani_images">Gambar Al-Qur\'an didasarkan pada font dari Kompleks Percetakan Al-Qur\'an Raja Fahd</string>

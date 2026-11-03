@@ -4,8 +4,36 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
   <com.quran.labs.androidquran.ui.preference.QuranHeaderPreference
-      android:summary="@string/about_description"
+      android:summary="@string/about_mengaji_description"
       android:title="@string/app_name"/>
+
+  <PreferenceCategory
+      android:title="@string/about_mengaji_section"
+      app:iconSpaceReserved="false">
+
+    <Preference
+        android:summary="@string/about_mengaji_description"
+        android:title="@string/app_name"
+        app:iconSpaceReserved="false">
+      <intent
+          android:action="android.intent.action.VIEW"
+          android:data="@string/about_mengaji_url"/>
+    </Preference>
+  </PreferenceCategory>
+
+  <PreferenceCategory
+      android:title="@string/about_original_project"
+      app:iconSpaceReserved="false">
+
+    <Preference
+        android:summary="@string/about_description"
+        android:title="@string/about_original_project_title"
+        app:iconSpaceReserved="false">
+      <intent
+          android:action="android.intent.action.VIEW"
+          android:data="@string/about_original_project_url"/>
+    </Preference>
+  </PreferenceCategory>
 
   <PreferenceCategory
       android:key="aboutDataSources"

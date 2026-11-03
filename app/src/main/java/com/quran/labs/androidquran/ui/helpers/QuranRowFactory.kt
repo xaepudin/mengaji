@@ -32,7 +32,6 @@ class QuranRowFactory @Inject constructor(
         context.resources.getQuantityString(R.plurals.plural_recent_pages, count)
       )
       .withType(QuranRow.RECENTS_HEADER)
-      .withItemCount(count)
       .withCollapsedState(isCollapsed)
       .build()
   }
