@@ -157,11 +157,17 @@ class CollectionReadingActivity : AppCompatActivity() {
         showTranslation = !showTranslation
         quranSettings.setCollectionReadingShowTranslation(showTranslation)
         adapter.showTranslation = showTranslation
-    adapter.showContinuous = continuousAyahs
         invalidateOptionsMenu()
         return true
       }
 
+      R.id.action_toggle_continuous -> {
+        continuousAyahs = !continuousAyahs
+        quranSettings.setCollectionReadingContinuous(continuousAyahs)
+        adapter.showContinuous = continuousAyahs
+        invalidateOptionsMenu()
+        return true
+      }
     }
     return super.onOptionsItemSelected(item)
   }
