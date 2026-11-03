@@ -222,11 +222,11 @@
   <string name="prefs_category_advanced">Opsi Lanjutan</string>
   <string name="prefs_category_advanced_summary">Impor/ekspor penanda, atur direktori data Quran, dll.</string>
   <string name="prefs_import_title">Impor</string>
-  <string name="prefs_import_summary">Impor penanda dan label</string>
+  <string name="prefs_import_summary">Impor cadangan penanda dan koleksi</string>
   <string name="prefs_export_title">Ekspor</string>
-  <string name="prefs_export_summary">Ekspor salinan penanda dan label</string>
+  <string name="prefs_export_summary">Ekspor cadangan penanda dan koleksi</string>
   <string name="prefs_export_csv_title">Ekspor CSV</string>
-  <string name="prefs_export_csv_summary">Ekspor salinan penanda dan label dalam format CSV</string>
+  <string name="prefs_export_csv_summary">Ekspor salinan penanda dan koleksi dalam format CSV</string>
   <string name="prefs_page_type_title">Jenis Halaman (eksperimental)</string>
   <string name="prefs_page_type_summary">Pilih jenis halaman membaca</string>
   <string name="prefs_sura_translated_name_summary">Tampilkan terjemahan nama surat</string>
@@ -236,8 +236,7 @@
   <string name="import_data_permissions_error">Tidak dapat membaca berkas cadangan karena masalah perizinan.</string>
   <string name="import_data_error">Berkas cadangan tidak valid (atau tidak dapat membaca berkas cadangan).</string>
   <string name="import_data">Impor Data</string>
-  <string name="import_data_and_merge_collections">Ini juga akan menambahkan %1$d koleksi ke data Anda saat ini.</string>
-  <string name="import_data_and_merge">Jika Anda mengimpor berkas ini, %1$d penanda dan %2$d label akan ditambahkan ke data saat ini. Impor?</string>
+  <string name="import_data_and_merge">Jika Anda mengimpor berkas ini, %1$d penanda dan %2$d koleksi akan ditambahkan ke data saat ini. Impor?</string>
   <string name="import_successful">Impor Berhasil</string>
   <string name="export_data_error">Kesalahan saat mengekspor data</string>
   <string name="exported_data">Data diekspor ke %1$s</string>

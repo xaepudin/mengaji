@@ -52,24 +52,11 @@ class QuranImportActivity : AppCompatActivity(), ActivityCompat.OnRequestPermiss
   fun isShowingDialog(): Boolean = alertDialog != null
 
   fun showImportConfirmationDialog(bookmarkData: BookmarkData) {
-    val dialogMessage = buildString {
-      append(
-        getString(
-          R.string.import_data_and_merge,
-          bookmarkData.bookmarks.size,
-          bookmarkData.tags.size
-        )
-      )
-      if (bookmarkData.collections.isNotEmpty()) {
-        append("\n\n")
-        append(
-          getString(
-            R.string.import_data_and_merge_collections,
-            bookmarkData.collections.size
-          )
-        )
-      }
-    }
+    val dialogMessage = getString(
+      R.string.import_data_and_merge,
+      bookmarkData.bookmarks.size,
+      bookmarkData.collections.size
+    )
     val builder = AlertDialog.Builder(this).apply {
       setMessage(dialogMessage)
       setPositiveButton(R.string.import_data) { _, _ ->

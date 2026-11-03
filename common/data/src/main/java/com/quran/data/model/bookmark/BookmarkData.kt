@@ -25,6 +25,23 @@ data class BookmarkData @JvmOverloads constructor(
       .map { "${it.getCommaSeparatedValues(tags)} \n" }
       .reduceOrNull { acc, bookmark -> "$acc$bookmark" }
 
+  fun getCollectionsHeader() =
+    "collection, name, entry, start_sura, start_ayah, end_sura, end_ayah"
+
+  fun getCollectionsByLine(): String? =
+    collections
+      .map { collection ->
+        if (collection.entries.isEmpty()) {
+          "collection, ${collection.name}, , , , ,  \n"
+        } else {
+          collection.entries.joinToString(separator = "") { entry ->
+            "collection, ${collection.name}, ${entry.name}, ${entry.startSura}, " +
+              "${entry.startAyah}, ${entry.endSura}, ${entry.endAyah} \n"
+          }
+        }
+      }
+      .reduceOrNull { acc, lines -> "$acc$lines" }
+
   fun getReadingBookmarksByLine() =
     readingBookmarks
       .map { "${it.getCommaSeparatedValues()} \n" }

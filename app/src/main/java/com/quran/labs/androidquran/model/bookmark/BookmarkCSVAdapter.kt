@@ -10,9 +10,14 @@ fun toCSV(sink: BufferedSink, bookmarks: BookmarkData) {
   val bookmark = bookmarks.getBookmarksByLine() ?: ""
   val recentPages = bookmarks.getRecentPagesByLine() ?: ""
   val readingBookmarks = bookmarks.getReadingBookmarksByLine() ?: ""
+  val collections = bookmarks.getCollectionsByLine()
 
   sink.writeUtf8(bookmarksName)
   sink.writeUtf8(bookmark)
   sink.writeUtf8(recentPages)
   sink.writeUtf8(readingBookmarks)
+  if (!collections.isNullOrEmpty()) {
+    sink.writeUtf8("${bookmarks.getCollectionsHeader()} \n")
+    sink.writeUtf8(collections)
+  }
 }

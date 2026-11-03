@@ -572,6 +572,56 @@ class BookmarkImportExportModelTest {
   }
 
   @Test
+  fun testExportBookmarksCsvIncludesCollections() {
+    runBlocking {
+      val id = collectionDao.createCollection("Doa")
+      collectionDao.addEntry(id, "Hafalan", SuraAyah(87, 1), SuraAyah(87, 5))
+    }
+
+    val testObserver = TestObserver<Uri>()
+    bookmarkImportExportModel.exportBookmarksCSVObservable().subscribe(testObserver)
+    BaseTestExtension.awaitTerminalEvent(testObserver)
+
+    testObserver.assertNoErrors()
+    assertThat(csvBackupFile().readText()).isEqualTo(
+      "type, sura, ayah, page, timestamp, tags, slot \n" +
+        "collection, name, entry, start_sura, start_ayah, end_sura, end_ayah \n" +
+        "collection, Doa, Hafalan, 87, 1, 87, 5 \n"
+    )
+  }
+
+  @Test
+  fun testExportImportRoundTripRestoresCollections() {
+    val collectionId = runBlocking {
+      val id = collectionDao.createCollection("Doa")
+      collectionDao.addEntry(id, "Hafalan", SuraAyah(87, 1), SuraAyah(87, 5))
+      id
+    }
+
+    val exportObserver = TestObserver<Uri>()
+    bookmarkImportExportModel.exportBookmarksObservable().subscribe(exportObserver)
+    BaseTestExtension.awaitTerminalEvent(exportObserver)
+    exportObserver.assertNoErrors()
+
+    val exportedData = backupFile().source().buffer().use { source ->
+      BookmarkJsonModel().fromJson(source)
+    }
+    assertThat(exportedData.collections).hasSize(1)
+
+    runBlocking { collectionDao.deleteCollection(collectionId) }
+    assertThat(runBlocking { collectionDao.collections() }).isEmpty()
+
+    importData(exportedData)
+
+    val restored = runBlocking { collectionDao.collections() }.single()
+    assertThat(restored.name).isEqualTo("Doa")
+    val entries = runBlocking { collectionDao.entries(restored.id) }
+    assertThat(entries.single().name).isEqualTo("Hafalan")
+    assertThat(entries.single().start).isEqualTo(SuraAyah(87, 1))
+    assertThat(entries.single().end).isEqualTo(SuraAyah(87, 5))
+  }
+
+  @Test
   fun testImportCollectionsMergesByNameAndDeduplicatesRanges() {
     val data = BookmarkData(
       collections = listOf(

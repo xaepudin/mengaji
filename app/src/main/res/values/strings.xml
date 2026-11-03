@@ -293,11 +293,11 @@
   <string name="prefs_category_advanced">Advanced Options</string>
   <string name="prefs_category_advanced_summary">Import/export bookmarks, set Quran data directory, etc.</string>
   <string name="prefs_import_title">Import</string>
-  <string name="prefs_import_summary">Import bookmarks and tags</string>
+  <string name="prefs_import_summary">Import a backup of bookmarks and collections</string>
   <string name="prefs_export_title">Export</string>
-  <string name="prefs_export_summary">Export a copy of bookmarks and tags</string>
+  <string name="prefs_export_summary">Export a backup of bookmarks and collections</string>
   <string name="prefs_export_csv_title">Export CSV</string>
-  <string name="prefs_export_csv_summary">Export a copy of bookmarks and tags in CSV</string>
+  <string name="prefs_export_csv_summary">Export a copy of bookmarks and collections in CSV</string>
   <string name="prefs_page_type_title">Page Type (experimental)</string>
   <string name="prefs_page_type_summary">Select the type of reading pages</string>
   <string name="prefs_sura_translated_name_summary">Show the translation of surah name</string>
@@ -309,8 +309,7 @@
   <string name="import_data_permissions_error">Unable to read backup file due to permissions error.</string>
   <string name="import_data_error">Invalid backup file (or unable to read backup file).</string>
   <string name="import_data">Import Data</string>
-  <string name="import_data_and_merge_collections">It will also add %1$d collection(s) to your current data.</string>
-  <string name="import_data_and_merge">If you import this file, it will add %1$d bookmark(s) and %2$d tag(s) to your current data. Import?</string>
+  <string name="import_data_and_merge">If you import this file, it will add %1$d bookmark(s) and %2$d collection(s) to your current data. Import?</string>
   <string name="import_successful">Import Successful</string>
   <string name="export_data_error">Error exporting data</string>
   <string name="exported_data">Data exported to %1$s</string>
