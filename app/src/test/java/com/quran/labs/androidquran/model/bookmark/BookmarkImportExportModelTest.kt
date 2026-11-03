@@ -10,6 +10,9 @@ import com.quran.data.dao.Settings
 import com.quran.data.model.PageAppearance
 import com.quran.data.model.bookmark.AyahReadingBookmark
 import com.quran.data.model.bookmark.BackupReadingBookmark
+import com.quran.data.model.SuraAyah
+import com.quran.data.model.bookmark.BackupCollection
+import com.quran.data.model.bookmark.BackupCollectionEntry
 import com.quran.data.model.bookmark.Bookmark
 import com.quran.data.model.bookmark.BookmarkData
 import com.quran.data.model.bookmark.PageReadingBookmark
@@ -30,13 +33,18 @@ import com.quran.mobile.bookmark.importdata.MobileSyncImportReadingBookmark
 import com.quran.mobile.bookmark.importdata.MobileSyncImportResult
 import com.quran.mobile.bookmark.importdata.MobileSyncImporter
 import com.quran.mobile.bookmark.model.ReadingBookmarkPageMapper
+import com.quran.mobile.collection.AyahCollectionDao
+import com.quran.mobile.collection.CollectionsDatabase
 import com.quran.mobile.bookmark.time.DefaultMobileSyncTimestampProvider
 import io.reactivex.rxjava3.observers.TestObserver
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import okio.Buffer
 import okio.buffer
 import okio.source
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,6 +52,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
 import java.io.IOException
+import java.util.Properties
+import kotlinx.coroutines.runBlocking
 import kotlin.time.Instant
 
 @Config(application = TestApplication::class, sdk = [33])
@@ -57,6 +67,8 @@ class BookmarkImportExportModelTest {
   private lateinit var settings: FakeSettings
   private lateinit var quranInfo: QuranInfo
   private lateinit var mobileSyncImporter: FakeMobileSyncImporter
+  private lateinit var collectionDriver: SqlDriver
+  private lateinit var collectionDao: AyahCollectionDao
   private lateinit var bookmarkImportExportModel: BookmarkImportExportModel
 
   @Before
@@ -67,6 +79,12 @@ class BookmarkImportExportModelTest {
     settings = FakeSettings()
     quranInfo = QuranInfo(MadaniDataSource())
     mobileSyncImporter = FakeMobileSyncImporter()
+    collectionDriver = JdbcSqliteDriver(
+      JdbcSqliteDriver.IN_MEMORY,
+      Properties(),
+      CollectionsDatabase.Schema
+    )
+    collectionDao = AyahCollectionDao(CollectionsDatabase(collectionDriver))
     clearFileProviderCache()
     val pageMapper = ReadingBookmarkPageMapper(
       settings = settings,
@@ -85,8 +103,14 @@ class BookmarkImportExportModelTest {
         pageMapper,
         DefaultMobileSyncTimestampProvider()
       ),
-      mobileSyncImporter
+      mobileSyncImporter,
+      collectionDao
     )
+  }
+
+  @After
+  fun tearDown() {
+    collectionDriver.close()
   }
 
   /**
@@ -518,6 +542,65 @@ class BookmarkImportExportModelTest {
     assertThat(readingBookmark.sura).isEqualTo(2)
     assertThat(readingBookmark.ayah).isEqualTo(255)
     assertThat(readingBookmark.timestampMillis).isEqualTo(1_000_000)
+  }
+
+  @Test
+  fun testExportIncludesCollections() {
+    runBlocking {
+      val id = collectionDao.createCollection("Doa")
+      collectionDao.addEntry(id, "Hafalan", SuraAyah(87, 1), SuraAyah(87, 5))
+      collectionDao.addEntry(id, "Al-Fajr", SuraAyah(89, 28), SuraAyah(90, 2))
+    }
+
+    val testObserver = TestObserver<Uri>()
+    bookmarkImportExportModel.exportBookmarksObservable().subscribe(testObserver)
+    BaseTestExtension.awaitTerminalEvent(testObserver)
+    testObserver.assertNoErrors()
+    testObserver.assertValueCount(1)
+
+    val data = backupFile().source().buffer().use { source ->
+      BookmarkJsonModel().fromJson(source)
+    }
+    val collection = data.collections.single()
+    assertThat(collection.name).isEqualTo("Doa")
+    assertThat(collection.entries.map { entry -> entry.name })
+      .containsExactly("Hafalan", "Al-Fajr").inOrder()
+    assertThat(collection.entries.map { entry -> entry.startSura })
+      .containsExactly(87, 89).inOrder()
+    assertThat(collection.entries.last().endSura).isEqualTo(90)
+    assertThat(collection.entries.last().endAyah).isEqualTo(2)
+  }
+
+  @Test
+  fun testImportCollectionsMergesByNameAndDeduplicatesRanges() {
+    val data = BookmarkData(
+      collections = listOf(
+        BackupCollection(
+          name = "Doa",
+          entries = listOf(
+            BackupCollectionEntry("Hafalan", 87, 1, 87, 5),
+            BackupCollectionEntry("Al-Fajr", 89, 28, 90, 2)
+          )
+        ),
+        BackupCollection(name = "Empty")
+      )
+    )
+
+    importData(data)
+
+    val collections = runBlocking { collectionDao.collections() }
+    assertThat(collections.map { collection -> collection.name })
+      .containsExactly("Doa", "Empty")
+    val doa = collections.single { collection -> collection.name == "Doa" }
+    val entries = runBlocking { collectionDao.entries(doa.id) }
+    assertThat(entries.map { entry -> entry.name })
+      .containsExactly("Hafalan", "Al-Fajr").inOrder()
+
+    importData(data)
+
+    val entriesAfterSecondImport = runBlocking { collectionDao.entries(doa.id) }
+    assertThat(entriesAfterSecondImport).hasSize(2)
+    assertThat(runBlocking { collectionDao.collections() }).hasSize(2)
   }
 
   private fun importData(data: BookmarkData) {

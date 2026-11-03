@@ -236,6 +236,7 @@
   <string name="import_data_permissions_error">Tidak dapat membaca berkas cadangan karena masalah perizinan.</string>
   <string name="import_data_error">Berkas cadangan tidak valid (atau tidak dapat membaca berkas cadangan).</string>
   <string name="import_data">Impor Data</string>
+  <string name="import_data_and_merge_collections">Ini juga akan menambahkan %1$d koleksi ke data Anda saat ini.</string>
   <string name="import_data_and_merge">Jika Anda mengimpor berkas ini, %1$d penanda dan %2$d label akan ditambahkan ke data saat ini. Impor?</string>
   <string name="import_successful">Impor Berhasil</string>
   <string name="export_data_error">Kesalahan saat mengekspor data</string>

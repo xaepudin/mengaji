@@ -7,12 +7,17 @@ import com.quran.data.dao.BookmarkSortOrder
 import com.quran.data.dao.BookmarksDao
 import com.quran.data.dao.ReadingBookmarksDao
 import com.quran.data.dao.RecentPagesDao
+import com.quran.data.model.SuraAyah
+import com.quran.data.model.bookmark.BackupCollection
+import com.quran.data.model.bookmark.BackupCollectionEntry
 import com.quran.data.model.bookmark.BackupReadingBookmark
 import com.quran.data.model.bookmark.BookmarkData
 import com.quran.labs.androidquran.R
 import com.quran.mobile.bookmark.importdata.BookmarkBackupImportNormalizer
 import com.quran.mobile.bookmark.importdata.MobileSyncImporter
 import com.quran.mobile.bookmark.model.ReadingBookmarkPageMapper
+import com.quran.mobile.collection.AyahCollectionDao
+import com.quran.mobile.collection.model.AyahCollection
 import com.quran.mobile.di.qualifier.ApplicationContext
 import dev.zacsweers.metro.Inject
 import io.reactivex.rxjava3.core.Observable
@@ -33,7 +38,8 @@ class BookmarkImportExportModel @Inject internal constructor(
   private val readingBookmarksDao: ReadingBookmarksDao,
   private val pageMapper: ReadingBookmarkPageMapper,
   private val backupImportNormalizer: BookmarkBackupImportNormalizer,
-  private val mobileSyncImporter: MobileSyncImporter
+  private val mobileSyncImporter: MobileSyncImporter,
+  private val collectionDao: AyahCollectionDao
 ) {
   fun readBookmarks(source: BufferedSource): Single<BookmarkData> {
     return Single.defer {
@@ -116,7 +122,21 @@ class BookmarkImportExportModel @Inject internal constructor(
                 pageMapper.suraAyahToPage(sura, ayah, pageType)
               }
             },
-          pageType = pageType
+          pageType = pageType,
+          collections = collectionDao.collections().map { collection ->
+            BackupCollection(
+              name = collection.name,
+              entries = collectionDao.entries(collection.id).map { entry ->
+                BackupCollectionEntry(
+                  name = entry.name,
+                  startSura = entry.startSura,
+                  startAyah = entry.startAyah,
+                  endSura = entry.endSura,
+                  endAyah = entry.endAyah
+                )
+              }
+            )
+          }
         )
       }
     }.subscribeOn(Schedulers.io())
@@ -136,7 +156,60 @@ class BookmarkImportExportModel @Inject internal constructor(
     if (!importData.isEmpty()) {
       mobileSyncImporter.importData(importData, deleteExisting = false)
     }
+    importCollections(data.collections)
   }
+
+  /**
+   * Merges collections by name, skipping entries whose ayah range already exists. Re-importing the
+   * same backup is therefore safe.
+   */
+  private suspend fun importCollections(collections: List<BackupCollection>) {
+    if (collections.isEmpty()) {
+      return
+    }
+
+    val existingCollections = collectionDao.collections()
+      .associateBy { collection -> collection.name }
+      .toMutableMap()
+    for (backupCollection in collections) {
+      val name = backupCollection.name.trim()
+      if (name.isEmpty()) {
+        continue
+      }
+      val collection = existingCollections[name] ?: run {
+        val id = collectionDao.createCollection(name)
+        AyahCollection(id = id, name = name, entryCount = 0)
+          .also { created -> existingCollections[name] = created }
+      }
+      val existingRanges = collectionDao.entries(collection.id)
+        .mapTo(mutableSetOf()) { entry ->
+          EntryRange(entry.startSura, entry.startAyah, entry.endSura, entry.endAyah)
+        }
+      for (entry in backupCollection.entries) {
+        if (entry.startSura !in 1..114 || entry.endSura !in 1..114 ||
+          entry.startAyah < 1 || entry.endAyah < 1
+        ) {
+          continue
+        }
+        val range = EntryRange(entry.startSura, entry.startAyah, entry.endSura, entry.endAyah)
+        if (existingRanges.add(range)) {
+          collectionDao.addEntry(
+            collectionId = collection.id,
+            name = entry.name,
+            start = SuraAyah(entry.startSura, entry.startAyah),
+            end = SuraAyah(entry.endSura, entry.endAyah)
+          )
+        }
+      }
+    }
+  }
+
+  private data class EntryRange(
+    val startSura: Int,
+    val startAyah: Int,
+    val endSura: Int,
+    val endAyah: Int
+  )
 
   companion object {
     private const val FILE_NAME = "quran_android.backup"

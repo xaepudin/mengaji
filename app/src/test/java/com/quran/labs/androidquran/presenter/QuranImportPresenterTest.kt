@@ -21,10 +21,15 @@ import com.quran.mobile.bookmark.importdata.MobileSyncImportResult
 import com.quran.mobile.bookmark.importdata.MobileSyncImporter
 import com.quran.mobile.bookmark.model.ReadingBookmarkPageMapper
 import com.quran.mobile.bookmark.time.DefaultMobileSyncTimestampProvider
+import com.quran.mobile.collection.AyahCollectionDao
+import com.quran.mobile.collection.CollectionsDatabase
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import io.reactivex.rxjava3.observers.TestObserver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import okio.BufferedSource
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,6 +38,7 @@ import org.robolectric.annotation.Config
 import java.io.ByteArrayInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
+import java.util.Properties
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = TestApplication::class, sdk = [33])
@@ -40,6 +46,7 @@ class QuranImportPresenterTest {
 
   private lateinit var context: Context
   private lateinit var importExportModel: BookmarkImportExportModel
+  private lateinit var collectionDriver: SqlDriver
 
   @Before
   fun setup() {
@@ -49,6 +56,11 @@ class QuranImportPresenterTest {
       settings = settings,
       pageProviders = mapOf("madani" to FakePageProvider()),
       fallbackPageType = "madani"
+    )
+    collectionDriver = JdbcSqliteDriver(
+      JdbcSqliteDriver.IN_MEMORY,
+      Properties(),
+      CollectionsDatabase.Schema
     )
     importExportModel = BookmarkImportExportModel(
       context,
@@ -62,8 +74,14 @@ class QuranImportPresenterTest {
         pageMapper,
         DefaultMobileSyncTimestampProvider()
       ),
-      FakeMobileSyncImporter()
+      FakeMobileSyncImporter(),
+      AyahCollectionDao(CollectionsDatabase(collectionDriver))
     )
+  }
+
+  @After
+  fun tearDown() {
+    collectionDriver.close()
   }
 
   // ---- parseExternalFile tests ----

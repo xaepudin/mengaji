@@ -8,7 +8,8 @@ data class BookmarkData @JvmOverloads constructor(
   val bookmarks: List<Bookmark> = emptyList(),
   val recentPages: List<RecentPage> = emptyList(),
   val readingBookmarks: List<BackupReadingBookmark> = emptyList(),
-  val pageType: String? = null
+  val pageType: String? = null,
+  val collections: List<BackupCollection> = emptyList()
 ) {
 
   fun getCommaSeparatedNames() =
