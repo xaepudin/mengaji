@@ -63,6 +63,9 @@ class QuranListAdapter(
       VIEW_TYPE_COLLECTION ->
         CollectionHolder(inflater.inflate(R.layout.item_collection, parent, false))
 
+      VIEW_TYPE_COMPACT_TAG ->
+        CompactTagHolder(inflater.inflate(R.layout.item_tag_row, parent, false))
+
       else -> ViewHolder(inflater.inflate(R.layout.index_sura_row, parent, false))
     }
   }
@@ -75,6 +78,7 @@ class QuranListAdapter(
       VIEW_TYPE_HIGHLIGHT_COLOR -> bindHighlightColor(holder as HighlightColorHolder, position)
       VIEW_TYPE_COLLECTIONS_HEADER -> bindCollectionsHeader(holder as CollectionsHeaderHolder, position)
       VIEW_TYPE_COLLECTION -> bindCollection(holder as CollectionHolder, position)
+      VIEW_TYPE_COMPACT_TAG -> bindCompactTag(holder as CompactTagHolder, position)
       else -> bindRow(holder as HeaderHolder, position)
     }
   }
@@ -88,6 +92,7 @@ class QuranListAdapter(
     return when {
       element.isCollectionsHeader -> VIEW_TYPE_COLLECTIONS_HEADER
       element.isCollection -> VIEW_TYPE_COLLECTION
+      element.isBookmarkHeader && !element.isCollapsible -> VIEW_TYPE_COMPACT_TAG
       element.isReadingBookmarksHeader || element.isRecentHeader || element.isTagsHeader ||
         element.isBookmarkHeader || element.isHighlightsHeader -> VIEW_TYPE_COLLECTION_HEADER
       element.isHeader -> VIEW_TYPE_HEADER
@@ -263,6 +268,13 @@ class QuranListAdapter(
     holder.add.setOnClickListener { touchListener?.onCreateCollection() }
   }
 
+  private fun bindCompactTag(holder: CompactTagHolder, pos: Int) {
+    val element = elements[pos]
+    holder.name.text = element.text
+    holder.count.text = QuranUtils.getLocalizedNumber(element.itemCount ?: 0)
+    holder.itemView.setOnClickListener { touchListener?.onClick(element, pos) }
+  }
+
   private fun bindCollection(holder: CollectionHolder, pos: Int) {
     val element = elements[pos]
     holder.name.text = element.text
@@ -296,14 +308,6 @@ class QuranListAdapter(
       holder.expandIcon.contentDescription = context.getString(
         if (item.isCollapsed) R.string.expand_collection else R.string.collapse_collection
       )
-    } else if (item.isBookmarkHeader) {
-      // Compact tag rows keep the same layout, using a tag glyph where a
-      // collapsible tag header would show its expand arrow.
-      holder.expandIcon.visibility = View.VISIBLE
-      holder.expandIcon.setImageResource(
-        com.quran.labs.androidquran.common.toolbar.R.drawable.ic_tag
-      )
-      holder.expandIcon.contentDescription = null
     } else {
       holder.expandIcon.visibility = View.INVISIBLE
     }
@@ -403,6 +407,11 @@ class QuranListAdapter(
     val count: TextView = itemView.findViewById(R.id.collection_count)
   }
 
+  private inner class CompactTagHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val name: TextView = itemView.findViewById(R.id.tag_name)
+    val count: TextView = itemView.findViewById(R.id.tag_count)
+  }
+
   private inner class HighlightColorHolder(itemView: View) : HeaderHolder(itemView) {
     val swatch: ImageView = itemView.findViewById(R.id.rowIcon)
   }
@@ -421,5 +430,6 @@ class QuranListAdapter(
     private const val VIEW_TYPE_HIGHLIGHT_COLOR = 3
     private const val VIEW_TYPE_COLLECTIONS_HEADER = 4
     private const val VIEW_TYPE_COLLECTION = 5
+    private const val VIEW_TYPE_COMPACT_TAG = 6
   }
 }
