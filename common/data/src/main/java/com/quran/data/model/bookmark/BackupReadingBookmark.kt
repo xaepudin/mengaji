@@ -14,7 +14,7 @@ data class BackupReadingBookmark(
   val name: String? = null
 ) {
   fun getCommaSeparatedValues() =
-    "reading_bookmark, $sura, $ayah, $page, ${timestamp.epochSeconds},, $slot"
+    "reading_bookmark, $sura, $ayah, $page, ${timestamp.epochSeconds},, ${slot.backupName}"
 
   companion object {
     const val TYPE_AYAH = "ayah"

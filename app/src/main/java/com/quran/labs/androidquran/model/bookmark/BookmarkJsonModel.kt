@@ -1,6 +1,7 @@
 package com.quran.labs.androidquran.model.bookmark
 
 import com.quran.data.model.bookmark.BookmarkData
+import com.quran.data.model.bookmark.ReadingBookmarkType
 import com.quran.mobile.bookmark.time.legacyTimestampMillis
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonDataException
@@ -20,6 +21,7 @@ internal class BookmarkJsonModel @Inject constructor() {
     val moshi = Moshi.Builder()
       .add(String::class.java, LegacyBackupStringAdapter)
       .add(Instant::class.java, LegacyBackupInstantAdapter)
+      .add(ReadingBookmarkType::class.java, ReadingBookmarkTypeAdapter)
       .build()
     jsonAdapter = moshi.adapter(BookmarkData::class.java)
   }
@@ -37,6 +39,26 @@ internal class BookmarkJsonModel @Inject constructor() {
   @Throws(IOException::class)
   fun fromJson(jsonSource: BufferedSource): BookmarkData {
     return jsonAdapter.fromJson(jsonSource)!!
+  }
+
+  private object ReadingBookmarkTypeAdapter : JsonAdapter<ReadingBookmarkType>() {
+    override fun fromJson(reader: JsonReader): ReadingBookmarkType? {
+      return when (reader.peek()) {
+        JsonReader.Token.NULL -> reader.nextNull()
+        else -> when (val value = reader.nextString()) {
+          "TEAL" -> ReadingBookmarkType.TEAL
+          "ORANGE" -> ReadingBookmarkType.ORANGE
+          "RED" -> ReadingBookmarkType.RED
+          else -> throw JsonDataException(
+            "Unknown reading bookmark type $value at ${reader.path}"
+          )
+        }
+      }
+    }
+
+    override fun toJson(writer: JsonWriter, value: ReadingBookmarkType?) {
+      writer.value(value?.backupName)
+    }
   }
 
   private object LegacyBackupInstantAdapter : JsonAdapter<Instant>() {
