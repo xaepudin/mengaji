@@ -139,7 +139,7 @@ class AyahSearchAdapter(
         builder.append(" ")
       }
       builder.append(result.arabicText.trim().replace('\n', ' '))
-      builder.append("  ·  ")
+      builder.append("  ۝  ")
     }
     holder.arabic.typeface = quranTypeface
     holder.arabic.text = builder
