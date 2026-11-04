@@ -21,6 +21,9 @@ class BookmarkUIConverter @Inject constructor(
         is BookmarkRowData.ReadingBookmarkItem ->
           quranRowFactory.fromReadingBookmark(context, rowData.readingBookmark)
 
+        is BookmarkRowData.TagsHeader ->
+          quranRowFactory.fromTagsHeader(context, rowData.count, rowData.isCollapsed)
+
         is BookmarkRowData.RecentPageHeader ->
           quranRowFactory.fromRecentPageHeader(context, rowData.count, rowData.isCollapsed)
 

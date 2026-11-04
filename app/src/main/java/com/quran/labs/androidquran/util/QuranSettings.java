@@ -35,6 +35,7 @@ public class QuranSettings implements PageThemeSettings {
       "collection_reading_show_translation";
   private static final String PREF_COLLECTIONS_COLLAPSED = "collections_collapsed";
   private static final String PREF_READING_BOOKMARKS_COLLAPSED = "reading_bookmarks_collapsed";
+  private static final String PREF_TAGS_COLLAPSED = "tags_collapsed";
   private static final String PREF_COLLECTION_READING_CONTINUOUS = "collection_reading_continuous";
 
   private static QuranSettings instance;
@@ -131,6 +132,14 @@ public class QuranSettings implements PageThemeSettings {
 
   public void setReadingBookmarksCollapsed(boolean collapsed) {
     prefs.edit().putBoolean(PREF_READING_BOOKMARKS_COLLAPSED, collapsed).apply();
+  }
+
+  public boolean areTagsCollapsed() {
+    return prefs.getBoolean(PREF_TAGS_COLLAPSED, false);
+  }
+
+  public void setTagsCollapsed(boolean collapsed) {
+    prefs.edit().putBoolean(PREF_TAGS_COLLAPSED, collapsed).apply();
   }
 
   public boolean isCollectionReadingContinuous() {

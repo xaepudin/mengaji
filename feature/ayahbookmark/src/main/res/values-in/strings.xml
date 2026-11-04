@@ -11,4 +11,12 @@
   <string name="ayahbookmark_not_saved">Belum tersimpan</string>
   <string name="ayahbookmark_highlight_title">Sorotan</string>
   <string name="ayahbookmark_highlight_none">Tidak ada</string>
+  <string name="ayahbookmark_tags_header">Tag</string>
+  <string name="ayahbookmark_new_tag">Tag baru</string>
+  <string name="ayahbookmark_tag_name_hint">Nama tag</string>
+  <string name="ayahbookmark_tag_name_error">Nama tag tersebut tidak tersedia.</string>
+  <string name="ayahbookmark_tag_name_duplicate">Tag dengan nama “%1$s” sudah ada.</string>
+  <string name="ayahbookmark_tag_name_reserved">“%1$s” adalah nama yang dicadangkan.</string>
+  <string name="ayahbookmark_tag_name_empty">Nama tag tidak boleh kosong.</string>
+  <string name="ayahbookmark_tag_name_too_long">Nama tag terlalu panjang.</string>
 </resources>

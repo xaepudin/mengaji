@@ -48,6 +48,16 @@ class QuranRowFactory @Inject constructor(
       .withType(QuranRow.HEADER).build()
   }
 
+  fun fromTagsHeader(context: Context, count: Int, isCollapsed: Boolean): QuranRow {
+    return QuranRow.Builder()
+      .withText(
+        context.resources.getQuantityString(R.plurals.plural_tags, count)
+      )
+      .withType(QuranRow.TAGS_HEADER)
+      .withCollapsedState(isCollapsed)
+      .build()
+  }
+
   fun fromReadingBookmarkHeader(context: Context, count: Int): QuranRow {
     return QuranRow.Builder()
       .withText(

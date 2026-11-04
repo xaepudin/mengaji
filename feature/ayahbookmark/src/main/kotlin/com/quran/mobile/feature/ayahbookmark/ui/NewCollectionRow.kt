@@ -42,7 +42,8 @@ import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkCollectionNameErr
 @Composable
 internal fun NewCollectionTriggerRow(
   onClick: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  titleRes: Int = R.string.ayahbookmark_new_collection
 ) {
   Row(
     modifier = modifier
@@ -54,7 +55,7 @@ internal fun NewCollectionTriggerRow(
   ) {
     PlusGlyph(color = MaterialTheme.colorScheme.primary)
     Text(
-      text = stringResource(R.string.ayahbookmark_new_collection),
+      text = stringResource(titleRes),
       style = MaterialTheme.typography.titleMedium,
       color = MaterialTheme.colorScheme.primary
     )
@@ -69,7 +70,8 @@ internal fun NewCollectionInputRow(
   onNameChange: (String) -> Unit,
   onCancel: () -> Unit,
   onCreate: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  isTag: Boolean = false
 ) {
   val focusRequester = remember { FocusRequester() }
   LaunchedEffect(Unit) { focusRequester.requestFocus() }
@@ -125,7 +127,10 @@ internal fun NewCollectionInputRow(
         )
         if (textFieldValue.value.text.isEmpty()) {
           Text(
-            text = stringResource(R.string.ayahbookmark_collection_name_hint),
+            text = stringResource(
+              if (isTag) R.string.ayahbookmark_tag_name_hint
+              else R.string.ayahbookmark_collection_name_hint
+            ),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(vertical = 5.dp)
@@ -134,7 +139,7 @@ internal fun NewCollectionInputRow(
       }
       if (nameError != null) {
         Text(
-          text = nameErrorMessage(nameError),
+          text = nameErrorMessage(nameError, isTag),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.error,
           modifier = Modifier.padding(top = 3.dp)
@@ -170,18 +175,38 @@ internal fun NewCollectionInputRow(
 }
 
 @Composable
-private fun nameErrorMessage(nameError: AyahBookmarkCollectionNameError): String {
+private fun nameErrorMessage(
+  nameError: AyahBookmarkCollectionNameError,
+  isTag: Boolean
+): String {
   return when (nameError) {
     is AyahBookmarkCollectionNameError.Duplicate ->
-      stringResource(R.string.ayahbookmark_collection_name_duplicate, nameError.existingName)
+      stringResource(
+        if (isTag) R.string.ayahbookmark_tag_name_duplicate
+        else R.string.ayahbookmark_collection_name_duplicate,
+        nameError.existingName
+      )
     is AyahBookmarkCollectionNameError.Reserved ->
-      stringResource(R.string.ayahbookmark_collection_name_reserved, nameError.name)
+      stringResource(
+        if (isTag) R.string.ayahbookmark_tag_name_reserved
+        else R.string.ayahbookmark_collection_name_reserved,
+        nameError.name
+      )
     AyahBookmarkCollectionNameError.Empty ->
-      stringResource(R.string.ayahbookmark_collection_name_empty)
+      stringResource(
+        if (isTag) R.string.ayahbookmark_tag_name_empty
+        else R.string.ayahbookmark_collection_name_empty
+      )
     AyahBookmarkCollectionNameError.TooLong ->
-      stringResource(R.string.ayahbookmark_collection_name_too_long)
+      stringResource(
+        if (isTag) R.string.ayahbookmark_tag_name_too_long
+        else R.string.ayahbookmark_collection_name_too_long
+      )
     AyahBookmarkCollectionNameError.Unavailable ->
-      stringResource(R.string.ayahbookmark_collection_name_error)
+      stringResource(
+        if (isTag) R.string.ayahbookmark_tag_name_error
+        else R.string.ayahbookmark_collection_name_error
+      )
   }
 }
 

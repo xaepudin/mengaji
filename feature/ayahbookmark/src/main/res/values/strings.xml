@@ -39,4 +39,12 @@
   <string name="readingbookmark_edit">Edit</string>
   <string name="readingbookmark_done_editing">Done editing</string>
   <string name="readingbookmark_editing_subtitle">Give each pin a name you’ll recognize</string>
+  <string name="ayahbookmark_tags_header">Tags</string>
+  <string name="ayahbookmark_new_tag">New tag</string>
+  <string name="ayahbookmark_tag_name_hint">Tag name</string>
+  <string name="ayahbookmark_tag_name_error">That tag name is unavailable.</string>
+  <string name="ayahbookmark_tag_name_duplicate">A tag named “%1$s” already exists.</string>
+  <string name="ayahbookmark_tag_name_reserved">“%1$s” is a reserved name.</string>
+  <string name="ayahbookmark_tag_name_empty">Tag names can’t be empty.</string>
+  <string name="ayahbookmark_tag_name_too_long">Tag name is too long.</string>
 </resources>

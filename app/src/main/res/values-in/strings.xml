@@ -397,4 +397,8 @@
   <!-- notification channel names [CHAR LIMIT=40] -->
   <string name="notification_channel_download">Unduhan Quran</string>
   <string name="notification_channel_audio">Bacaan Quran</string>
+  <plurals name="plural_tags">
+    <item quantity="one">Tag</item>
+    <item quantity="other">Tag</item>
+  </plurals>
 </resources>

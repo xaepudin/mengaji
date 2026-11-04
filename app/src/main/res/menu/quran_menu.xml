@@ -38,6 +38,7 @@
           android:title="@string/menu_settings"
           app:showAsAction="ifRoom" />
     <item android:id="@+id/help"
+          android:visible="false"
           android:title="@string/menu_help"
           app:showAsAction="never"/>
 </menu>

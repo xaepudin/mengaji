@@ -55,11 +55,13 @@ class ReaderThemeTest {
     assertThat(settings.areCollectionsCollapsed()).isFalse()
     assertThat(settings.isCollectionReadingContinuous()).isFalse()
     assertThat(settings.areReadingBookmarksCollapsed()).isFalse()
+    assertThat(settings.areTagsCollapsed()).isFalse()
 
     settings.setCollectionReadingShowTranslation(false)
     settings.setCollectionsCollapsed(true)
     settings.setCollectionReadingContinuous(true)
     settings.setReadingBookmarksCollapsed(true)
+    settings.setTagsCollapsed(true)
 
     QuranSettings.setInstance(null)
     val restored = QuranSettings.getInstance(context)
@@ -67,6 +69,7 @@ class ReaderThemeTest {
     assertThat(restored.areCollectionsCollapsed()).isTrue()
     assertThat(restored.isCollectionReadingContinuous()).isTrue()
     assertThat(restored.areReadingBookmarksCollapsed()).isTrue()
+    assertThat(restored.areTagsCollapsed()).isTrue()
   }
 
   @Test fun `keep navigation bar preference uses the settings key`() {

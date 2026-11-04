@@ -136,6 +136,15 @@
       app:iconSpaceReserved="false">
 
     <Preference
+        android:summary="@string/about_lafzi_url"
+        android:title="@string/about_lafzi"
+        app:iconSpaceReserved="false">
+      <intent
+          android:action="android.intent.action.VIEW"
+          android:data="@string/about_lafzi_url"/>
+    </Preference>
+
+    <Preference
         android:summary="@string/about_androidx_url"
         android:title="@string/about_androidx"
         app:iconSpaceReserved="false">

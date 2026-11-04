@@ -13,6 +13,11 @@ sealed class BookmarkRowData {
   ) : BookmarkRowData()
   data class ReadingBookmarkItem(val readingBookmark: ReadingBookmark) : BookmarkRowData()
 
+  data class TagsHeader(
+    val count: Int,
+    val isCollapsed: Boolean = false
+  ) : BookmarkRowData()
+
   data class RecentPageHeader(val count: Int, val isCollapsed: Boolean = false) : BookmarkRowData()
   data class RecentPage(val recentPage: com.quran.data.model.bookmark.RecentPage) : BookmarkRowData()
 

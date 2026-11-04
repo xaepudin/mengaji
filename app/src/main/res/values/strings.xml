@@ -79,6 +79,8 @@
   <string name="about_noorhidayat_summary">Noorehira font and Mufti Taqi Translation</string>
   <string name="about_noorhidayat_url" translatable="false">http://www.noorehidayat.org</string>
   <string name="about_open_source">Open Source Projects</string>
+  <string name="about_lafzi" translatable="false">Lafzi</string>
+  <string name="about_lafzi_url" translatable="false">https://github.com/lafzi/lafzi-android</string>
   <string name="about_androidx" translatable="false">AndroidX</string>
   <string name="about_androidx_url" translatable="false">https://developer.android.com/jetpack/androidx</string>
   <string name="about_dagger2" translatable="false">Dagger 2</string>
@@ -487,6 +489,10 @@
 
   <string name="recent_pages">Recent pages</string>
   <string name="old_page_bookmarks">Old Page Bookmarks</string>
+  <plurals name="plural_tags" translatable="false">
+    <item quantity="one">Tag</item>
+    <item quantity="other">Tags</item>
+  </plurals>
   <plurals name="plural_recent_pages" translatable="false">
     <item quantity="one">@string/menu_jump_last_page</item>
     <item quantity="other">@string/recent_pages</item>

@@ -28,6 +28,7 @@ import com.quran.labs.androidquran.dao.bookmark.BookmarkRowData.HighlightsHeader
 import com.quran.labs.androidquran.dao.bookmark.BookmarkRowData.ReadingBookmarkHeader
 import com.quran.labs.androidquran.dao.bookmark.BookmarkRowData.ReadingBookmarkItem
 import com.quran.labs.androidquran.dao.bookmark.BookmarkRowData.RecentPageHeader
+import com.quran.labs.androidquran.dao.bookmark.BookmarkRowData.TagsHeader
 import com.quran.labs.androidquran.dao.bookmark.BookmarkRowData.TagHeader
 import com.quran.labs.androidquran.model.translation.ArabicDatabaseUtils
 import com.quran.labs.androidquran.presenter.Presenter
@@ -72,6 +73,8 @@ open class BookmarkPresenter @Inject internal constructor(
 
   private var isHighlightsCollapsed: Boolean = quranSettings.isHighlightsCollapsed(true)
   private var isReadingBookmarksCollapsed: Boolean = quranSettings.areReadingBookmarksCollapsed()
+  private var isTagsCollapsed: Boolean = quranSettings.areTagsCollapsed()
+  private var showTagsSection = false
 
   private var cachedData: BookmarkRawResult? = null
   private var fragment: BookmarksFragment? = null
@@ -173,6 +176,16 @@ open class BookmarkPresenter @Inject internal constructor(
       collapsedCollections + collectionId
     }
     quranSettings.collapsedCollections = collapsedCollections
+    requestData(false)
+  }
+
+  fun setTagsSectionVisible(visible: Boolean) {
+    showTagsSection = visible
+  }
+
+  fun toggleTagsCollapsed() {
+    isTagsCollapsed = !isTagsCollapsed
+    quranSettings.setTagsCollapsed(isTagsCollapsed)
     requestData(false)
   }
 
@@ -589,6 +602,13 @@ open class BookmarkPresenter @Inject internal constructor(
     } else {
       rows.addAll(getHighlightRowData(highlights))
       rows.addAll(bookmarkRows)
+      if (showTagsSection && data.tags.isNotEmpty()) {
+        val isCollapsed = isTagsCollapsed
+        rows.add(TagsHeader(data.tags.size, isCollapsed))
+        if (!isCollapsed) {
+          rows.addAll(getRowDataSortedByTags(data.tags, data.bookmarks))
+        }
+      }
       rows
     }
   }

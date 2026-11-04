@@ -24,6 +24,7 @@ public class QuranRow {
   public static final int COLLECTION = 11;
   public static final int RECENTS_HEADER = 12;
   public static final int READING_BOOKMARKS_HEADER = 13;
+  public static final int TAGS_HEADER = 14;
 
   public int sura;
   public int ayah;
@@ -241,6 +242,10 @@ public class QuranRow {
 
   public boolean isReadingBookmarksHeader() {
     return rowType == READING_BOOKMARKS_HEADER;
+  }
+
+  public boolean isTagsHeader() {
+    return rowType == TAGS_HEADER;
   }
 
   public boolean isCollection() {

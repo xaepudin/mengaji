@@ -88,8 +88,8 @@ class QuranListAdapter(
     return when {
       element.isCollectionsHeader -> VIEW_TYPE_COLLECTIONS_HEADER
       element.isCollection -> VIEW_TYPE_COLLECTION
-      element.isReadingBookmarksHeader || element.isRecentHeader || element.isBookmarkHeader ||
-        element.isHighlightsHeader -> VIEW_TYPE_COLLECTION_HEADER
+      element.isReadingBookmarksHeader || element.isRecentHeader || element.isTagsHeader ||
+        element.isBookmarkHeader || element.isHighlightsHeader -> VIEW_TYPE_COLLECTION_HEADER
       element.isHeader -> VIEW_TYPE_HEADER
       element.isHighlightColor -> VIEW_TYPE_HIGHLIGHT_COLOR
       else -> VIEW_TYPE_ROW
@@ -339,6 +339,7 @@ class QuranListAdapter(
         selected.isHighlightColor ||          // the five highlight colors
         selected.isHighlightedAyah ||         // a highlighted ayah inside a color's screen
         selected.isReadingBookmarksHeader ||   // the collapsible reading bookmarks header
+        selected.isTagsHeader ||               // the collapsible tags header
         selected.isRecentHeader ||             // the collapsible recent pages header
         selected.isCollectionsHeader ||        // the collapsible collections header
         selected.isBookmarkHeader             // tags

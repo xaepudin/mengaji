@@ -164,6 +164,7 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
 
   override fun onStart() {
     super.onStart()
+    bookmarkPresenter.setTagsSectionVisible(true)
     bookmarkPresenter.bind(this)
     // The tag-based collection grouping is replaced by the new ayah collections.
     if (bookmarkPresenter.isGroupedByTags) {
@@ -282,10 +283,15 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
       bookmarksAdapter.setShowTags(false)
       bookmarksAdapter.setShowDate(bookmarkPresenter.isDateShowing)
       val ayahsHeader = requireContext().getString(R.string.ayahs)
-      val rows = items.rows.filterNot { row ->
-        row.rowType == QuranRow.AYAH_BOOKMARK ||
-          row.rowType == QuranRow.HIGHLIGHTED_AYAH ||
-          (row.rowType == QuranRow.HEADER && row.text == ayahsHeader)
+      val tagsIndex = items.rows.indexOfFirst { row -> row.rowType == QuranRow.TAGS_HEADER }
+      val rows = items.rows.filterIndexed { index, row ->
+        if (tagsIndex >= 0 && index >= tagsIndex) {
+          true
+        } else {
+          row.rowType != QuranRow.AYAH_BOOKMARK &&
+            row.rowType != QuranRow.HIGHLIGHTED_AYAH &&
+            !(row.rowType == QuranRow.HEADER && row.text == ayahsHeader)
+        }
       }
       baseRows = rows.toTypedArray()
       tagMap = items.tagMap
@@ -501,6 +507,10 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
 
       row.isReadingBookmarksHeader && row.isCollapsible -> {
         bookmarkPresenter.toggleReadingBookmarksCollapsed()
+      }
+
+      row.isTagsHeader && row.isCollapsible -> {
+        bookmarkPresenter.toggleTagsCollapsed()
       }
 
       row.isRecentHeader && row.isCollapsible -> {

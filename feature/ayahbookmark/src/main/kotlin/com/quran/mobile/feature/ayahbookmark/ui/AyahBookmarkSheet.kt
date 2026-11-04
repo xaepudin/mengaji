@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.quran.mobile.feature.ayahbookmark.R
+import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkCollectionCreationState
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkEvent
 import com.quran.mobile.feature.ayahbookmark.state.AyahCollectionChoice
 import com.quran.mobile.feature.ayahbookmark.state.AyahBookmarkState
@@ -126,13 +127,6 @@ internal fun AyahBookmarkSheet(
       )
 
       HorizontalDivider(modifier = Modifier.padding(top = 14.dp))
-
-      Text(
-        text = stringResource(R.string.ayahbookmark_collections_header).uppercase(),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
-      )
     }
 
     LazyColumn(
@@ -140,40 +134,86 @@ internal fun AyahBookmarkSheet(
         .weight(1f, fill = false)
         .padding(horizontal = 18.dp)
     ) {
+      item {
+        Text(
+          text = stringResource(R.string.ayahbookmark_collections_header).uppercase(),
+          style = MaterialTheme.typography.labelLarge,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
+        )
+      }
+
       items(collections, key = { it.id }) { collection ->
         CollectionChoiceRow(
           collection = collection,
           onClick = { onCollectionSelected(collection) }
         )
       }
-    }
 
-    Column {
-      if (creatingCollection) {
-        NewCollectionInputRow(
-          name = newCollectionName,
-          isSubmitting = false,
-          nameError = null,
-          onNameChange = { newCollectionName = it },
-          onCancel = {
-            creatingCollection = false
-            newCollectionName = ""
-          },
-          onCreate = {
-            val name = newCollectionName.trim()
-            if (name.isNotEmpty()) {
-              onCreateCollection(name)
+      item {
+        if (creatingCollection) {
+          NewCollectionInputRow(
+            name = newCollectionName,
+            isSubmitting = false,
+            nameError = null,
+            onNameChange = { newCollectionName = it },
+            onCancel = {
+              creatingCollection = false
+              newCollectionName = ""
+            },
+            onCreate = {
+              val name = newCollectionName.trim()
+              if (name.isNotEmpty()) {
+                onCreateCollection(name)
+              }
             }
-          }
-        )
-      } else {
-        NewCollectionTriggerRow(onClick = { creatingCollection = true })
+          )
+        } else {
+          NewCollectionTriggerRow(onClick = { creatingCollection = true })
+        }
       }
 
-      HorizontalDivider(
-        modifier = Modifier.padding(horizontal = 18.dp),
-        color = MaterialTheme.colorScheme.outlineVariant
-      )
+      item {
+        HorizontalDivider(
+          modifier = Modifier.padding(top = 18.dp, bottom = 8.dp),
+          color = MaterialTheme.colorScheme.outlineVariant
+        )
+      }
+
+      item {
+        Text(
+          text = stringResource(R.string.ayahbookmark_tags_header).uppercase(),
+          style = MaterialTheme.typography.labelLarge,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          modifier = Modifier.padding(top = 8.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
+        )
+      }
+
+      items(state.collections, key = { it.id }) { collection ->
+        CollectionRow(
+          collection = collection,
+          onToggle = { id -> eventSink(AyahBookmarkEvent.ToggleCollection(id)) }
+        )
+      }
+
+      item {
+        when (val creation = state.collectionCreation) {
+          is AyahBookmarkCollectionCreationState.Inactive -> NewCollectionTriggerRow(
+            onClick = { eventSink(AyahBookmarkEvent.StartCreatingCollection) },
+            titleRes = R.string.ayahbookmark_new_tag
+          )
+
+          is AyahBookmarkCollectionCreationState.Active -> NewCollectionInputRow(
+            name = creation.name,
+            isSubmitting = creation.isSubmitting,
+            nameError = creation.nameError,
+            onNameChange = { eventSink(AyahBookmarkEvent.CollectionNameChanged(it)) },
+            onCancel = { eventSink(AyahBookmarkEvent.CancelCreatingCollection) },
+            onCreate = { eventSink(AyahBookmarkEvent.CreateCollection(creation.name)) },
+            isTag = true
+          )
+        }
+      }
     }
   }
 }
