@@ -606,7 +606,16 @@ open class BookmarkPresenter @Inject internal constructor(
         val isCollapsed = isTagsCollapsed
         rows.add(TagsHeader(data.tags.size, isCollapsed))
         if (!isCollapsed) {
-          rows.addAll(getRowDataSortedByTags(data.tags, data.bookmarks))
+          val ayahBookmarks = data.bookmarks.filterNot { bookmark -> bookmark.isPageBookmark() }
+          for (tag in data.tags) {
+            rows.add(
+              TagHeader(
+                tag = tag,
+                count = ayahBookmarks.count { bookmark -> tag.id in bookmark.tags },
+                isCompact = true
+              )
+            )
+          }
         }
       }
       rows

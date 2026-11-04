@@ -27,7 +27,8 @@ sealed class BookmarkRowData {
   data class TagHeader(
     val tag: Tag,
     val count: Int = 0,
-    val isCollapsed: Boolean = false
+    val isCollapsed: Boolean = false,
+    val isCompact: Boolean = false
   ) : BookmarkRowData() {
     fun withCountDelta(delta: Int): TagHeader =
       if (delta == 0) this else copy(count = (count + delta).coerceAtLeast(0))

@@ -296,6 +296,14 @@ class QuranListAdapter(
       holder.expandIcon.contentDescription = context.getString(
         if (item.isCollapsed) R.string.expand_collection else R.string.collapse_collection
       )
+    } else if (item.isBookmarkHeader) {
+      // Compact tag rows keep the same layout, using a tag glyph where a
+      // collapsible tag header would show its expand arrow.
+      holder.expandIcon.visibility = View.VISIBLE
+      holder.expandIcon.setImageResource(
+        com.quran.labs.androidquran.common.toolbar.R.drawable.ic_tag
+      )
+      holder.expandIcon.contentDescription = null
     } else {
       holder.expandIcon.visibility = View.INVISIBLE
     }

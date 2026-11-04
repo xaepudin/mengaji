@@ -513,6 +513,11 @@ class BookmarksFragment : Fragment(), QuranTouchListener {
         bookmarkPresenter.toggleTagsCollapsed()
       }
 
+      row.isBookmarkHeader && !row.isCollapsible -> {
+        val tagId = row.tagId ?: return
+        startActivity(BookmarkListActivity.collectionIntent(requireContext(), tagId, row.text))
+      }
+
       row.isRecentHeader && row.isCollapsible -> {
         bookmarkPresenter.toggleShowRecents()
       }

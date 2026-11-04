@@ -205,15 +205,23 @@ class QuranRowFactory @Inject constructor(
     return builder.build()
   }
 
-  fun fromTag(context: Context, tag: Tag, count: Int, isCollapsed: Boolean): QuranRow {
-    return QuranRow.Builder()
+  fun fromTag(
+    context: Context,
+    tag: Tag,
+    count: Int,
+    isCollapsed: Boolean,
+    isCompact: Boolean = false
+  ): QuranRow {
+    val builder = QuranRow.Builder()
       .withType(QuranRow.BOOKMARK_HEADER)
       .withText(CollectionNames.displayName(context, tag))
       .withTagId(tag.id)
       .withItemCount(count)
-      .withCollapsedState(isCollapsed)
       .withReadOnlyCollection(tag.isReadOnly)
-      .build()
+    if (!isCompact) {
+      builder.withCollapsedState(isCollapsed)
+    }
+    return builder.build()
   }
 
   fun fromHighlightsHeader(context: Context, isCollapsed: Boolean): QuranRow {
