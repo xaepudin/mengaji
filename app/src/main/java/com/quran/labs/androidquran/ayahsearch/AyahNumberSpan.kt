@@ -2,6 +2,7 @@ package com.quran.labs.androidquran.ayahsearch
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.text.style.ReplacementSpan
 
 /**
@@ -35,6 +36,9 @@ internal class AyahNumberSpan(private val number: String) : ReplacementSpan() {
     canvas.drawText(marker, x, y.toFloat(), paint)
 
     val numberPaint = Paint(paint).apply {
+      // me_quran's Arabic-Indic digits are decorative ayah-number glyphs
+      // with bars around them; use a normal Arabic typeface for the digit.
+      typeface = Typeface.create("sans-serif", Typeface.NORMAL)
       textSize = paint.textSize * 0.52f
       textAlign = Paint.Align.CENTER
     }
