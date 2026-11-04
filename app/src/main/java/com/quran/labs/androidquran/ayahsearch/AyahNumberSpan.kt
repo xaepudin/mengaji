@@ -12,6 +12,7 @@ import android.text.style.ReplacementSpan
  */
 internal class AyahNumberSpan(private val number: String) : ReplacementSpan() {
   private val marker = "\u06DD"
+  private val markerScale = 0.85f
 
   override fun getSize(
     paint: Paint,
@@ -19,7 +20,10 @@ internal class AyahNumberSpan(private val number: String) : ReplacementSpan() {
     start: Int,
     end: Int,
     fm: Paint.FontMetricsInt?
-  ): Int = paint.measureText(marker).toInt()
+  ): Int {
+    val markerPaint = Paint(paint).apply { textSize = paint.textSize * markerScale }
+    return markerPaint.measureText(marker).toInt()
+  }
 
   override fun draw(
     canvas: Canvas,
@@ -32,17 +36,19 @@ internal class AyahNumberSpan(private val number: String) : ReplacementSpan() {
     bottom: Int,
     paint: Paint
   ) {
-    val markerWidth = paint.measureText(marker)
-    canvas.drawText(marker, x, y.toFloat(), paint)
+    val markerPaint = Paint(paint).apply { textSize = paint.textSize * markerScale }
+    val markerWidth = markerPaint.measureText(marker)
+    canvas.drawText(marker, x, y.toFloat(), markerPaint)
 
     val numberPaint = Paint(paint).apply {
       // me_quran's Arabic-Indic digits are decorative ayah-number glyphs
       // with bars around them; use a normal Arabic typeface for the digit.
-      typeface = Typeface.create("sans-serif", Typeface.NORMAL)
+      typeface = Typeface.create("sans-serif", Typeface.BOLD)
+      isFakeBoldText = true
       textSize = paint.textSize * 0.52f
       textAlign = Paint.Align.CENTER
     }
-    val markerMetrics = paint.fontMetrics
+    val markerMetrics = markerPaint.fontMetrics
     val centerY = y + (markerMetrics.ascent + markerMetrics.descent) / 2f
     val numberMetrics = numberPaint.fontMetrics
     val numberBaseline = centerY - (numberMetrics.ascent + numberMetrics.descent) / 2f
