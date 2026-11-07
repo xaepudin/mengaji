@@ -70,7 +70,6 @@ class QuranImportPresenterTest {
       FakeReadingBookmarksDao(),
       pageMapper,
       BookmarkBackupImportNormalizer(
-        context,
         pageMapper,
         DefaultMobileSyncTimestampProvider()
       ),
