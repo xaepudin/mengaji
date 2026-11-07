@@ -94,6 +94,7 @@ class AyahSearchActivity : AppCompatActivity() {
       quranDisplayData = quranDisplayData,
       onResultClick = ::openResult
     )
+    adapter.showSimilarity = quranSettings.isAyahSearchShowSimilarity()
     resultsList.layoutManager = LinearLayoutManager(this)
     resultsList.adapter = adapter
 
@@ -142,6 +143,8 @@ class AyahSearchActivity : AppCompatActivity() {
     menu.findItem(R.id.action_vocal_search)?.isChecked = isVocal
     menu.findItem(R.id.action_show_translation)?.isChecked =
       quranSettings.isAyahSearchShowTranslation()
+    menu.findItem(R.id.action_show_similarity)?.isChecked =
+      quranSettings.isAyahSearchShowSimilarity()
     return super.onPrepareOptionsMenu(menu)
   }
 
@@ -165,6 +168,14 @@ class AyahSearchActivity : AppCompatActivity() {
         item.isChecked = showTranslation
         quranSettings.setAyahSearchShowTranslation(showTranslation)
         rerunCurrentSearch()
+        true
+      }
+
+      R.id.action_show_similarity -> {
+        val showSimilarity = !quranSettings.isAyahSearchShowSimilarity()
+        item.isChecked = showSimilarity
+        quranSettings.setAyahSearchShowSimilarity(showSimilarity)
+        adapter.showSimilarity = showSimilarity
         true
       }
 

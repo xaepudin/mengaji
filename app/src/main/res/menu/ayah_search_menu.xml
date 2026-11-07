@@ -11,4 +11,9 @@
       android:checkable="true"
       android:title="@string/ayah_search_show_translation"
       app:showAsAction="never" />
+  <item
+      android:id="@+id/action_show_similarity"
+      android:checkable="true"
+      android:title="@string/ayah_search_show_similarity"
+      app:showAsAction="never" />
 </menu>

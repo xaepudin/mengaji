@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.quran.data.core.QuranInfo
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.QuranDisplayData
@@ -46,6 +47,18 @@ class AyahSearchAdapter(
       if (field != value) {
         field = value
         rebuildRows()
+        notifyDataSetChanged()
+      }
+    }
+
+  /**
+   * When enabled, phonetic results carry the percentage that the Lafzi scoring engine assigned to
+   * them. Results without a score (for instance Arabic FTS matches) never show a percentage.
+   */
+  var showSimilarity: Boolean = false
+    set(value) {
+      if (field != value) {
+        field = value
         notifyDataSetChanged()
       }
     }
@@ -200,6 +213,19 @@ class AyahSearchAdapter(
       )
     }
 
+    if (showSimilarity && result.relevance > 0) {
+      holder.similarity.visibility = View.VISIBLE
+      holder.similarity.text =
+        context.getString(R.string.ayah_search_similarity, result.relevance)
+      holder.similarity.contentDescription =
+        context.getString(R.string.ayah_search_similarity_description, result.relevance)
+      holder.similarityBar.visibility = View.VISIBLE
+      holder.similarityBar.setProgressCompat(result.relevance, false)
+    } else {
+      holder.similarity.visibility = View.GONE
+      holder.similarityBar.visibility = View.GONE
+    }
+
     holder.arabic.typeface = quranTypeface
     holder.arabic.text = buildArabicText(result)
 
@@ -295,6 +321,9 @@ class AyahSearchAdapter(
 
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val metadata: TextView = itemView.findViewById(R.id.result_metadata)
+    val similarity: TextView = itemView.findViewById(R.id.result_similarity)
+    val similarityBar: LinearProgressIndicator =
+      itemView.findViewById(R.id.result_similarity_bar)
     val arabic: TextView = itemView.findViewById(R.id.result_arabic)
     val translation: TextView = itemView.findViewById(R.id.result_translation)
   }

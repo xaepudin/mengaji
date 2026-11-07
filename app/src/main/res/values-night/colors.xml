@@ -32,4 +32,5 @@
   <color name="text_hint_color">#80ffffff</color>
   <color name="ayah_search_highlight">#664fc3f7</color>
   <color name="ayah_search_translation">#b3ffffff</color>
+  <color name="ayah_search_similarity_track">#33ffffff</color>
 </resources>

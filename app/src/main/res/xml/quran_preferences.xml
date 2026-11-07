@@ -226,6 +226,14 @@
 
     <CheckBoxPreference
         android:defaultValue="false"
+        android:key="@string/prefs_ayah_search_show_similarity"
+        android:persistent="true"
+        android:summary="@string/prefs_ayah_search_show_similarity_summary"
+        android:title="@string/prefs_ayah_search_show_similarity_title"
+        app:iconSpaceReserved="false"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
         android:key="@string/prefs_use_dyslexic_font"
         android:persistent="true"
         android:summary="@string/prefs_use_dyslexic_font_summary"

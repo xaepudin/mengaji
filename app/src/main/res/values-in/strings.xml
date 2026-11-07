@@ -123,6 +123,9 @@
   <string name="ayah_search_result_meta_no_page">%1$d. %2$s · Ayat %3$d</string>
   <string name="ayah_search_vocal">Pencarian berharakat</string>
   <string name="ayah_search_show_translation">Tampilkan terjemahan</string>
+  <string name="ayah_search_show_similarity">Tampilkan persentase kecocokan</string>
+  <string name="ayah_search_similarity">%1$d%%</string>
+  <string name="ayah_search_similarity_description">%1$d%% cocok</string>
   <plurals name="ayah_search_result_count">
     <item quantity="one">%1$d ayat ditemukan</item>
     <item quantity="other">%1$d ayat ditemukan</item>
@@ -196,6 +199,8 @@
   <string name="prefs_ayah_before_translation_summary">Tampilkan ayat dalam bahasa Arab di atas terjemahan</string>
   <string name="prefs_ayah_search_show_translation_title">Terjemahan di pencarian ayat</string>
   <string name="prefs_ayah_search_show_translation_summary">Tampilkan terjemahan yang dipilih di bawah ayat yang cocok</string>
+  <string name="prefs_ayah_search_show_similarity_title">Persentase kecocokan di pencarian ayat</string>
+  <string name="prefs_ayah_search_show_similarity_summary">Tampilkan seberapa cocok setiap hasil pencarian fonetik dengan kata kunci Anda</string>
   <string name="prefs_use_dyslexic_font_title">Font ramah disleksia</string>
   <string name="prefs_use_dyslexic_font_summary">Tampilkan terjemahan menggunakan font yang ramah disleksia</string>
   <string name="prefs_category_download">Opsi Unduhan</string>

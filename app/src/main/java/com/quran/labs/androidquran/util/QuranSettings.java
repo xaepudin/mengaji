@@ -30,6 +30,7 @@ public class QuranSettings implements PageThemeSettings {
   private static final String PREFS_FILE = "com.quran.labs.androidquran.per_installation";
   private static final String PREF_AYAH_SEARCH_VOCAL = "ayah_search_vocal";
   private static final String PREF_AYAH_SEARCH_SHOW_TRANSLATION = "ayah_search_show_translation";
+  private static final String PREF_AYAH_SEARCH_SHOW_SIMILARITY = "ayah_search_show_similarity";
   private static final String PREF_KEEP_NAVIGATION_BAR = "keepNavigationBarVisible";
   private static final String PREF_COLLECTION_READING_SHOW_TRANSLATION =
       "collection_reading_show_translation";
@@ -108,6 +109,14 @@ public class QuranSettings implements PageThemeSettings {
 
   public void setAyahSearchShowTranslation(boolean showTranslation) {
     prefs.edit().putBoolean(PREF_AYAH_SEARCH_SHOW_TRANSLATION, showTranslation).apply();
+  }
+
+  public boolean isAyahSearchShowSimilarity() {
+    return prefs.getBoolean(PREF_AYAH_SEARCH_SHOW_SIMILARITY, false);
+  }
+
+  public void setAyahSearchShowSimilarity(boolean showSimilarity) {
+    prefs.edit().putBoolean(PREF_AYAH_SEARCH_SHOW_SIMILARITY, showSimilarity).apply();
   }
 
   public boolean isCollectionReadingShowTranslation() {

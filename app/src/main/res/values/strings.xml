@@ -180,6 +180,9 @@
   <string name="ayah_search_result_meta_no_page">%1$d. %2$s · Ayah %3$d</string>
   <string name="ayah_search_vocal">Vocal search (with harakat)</string>
   <string name="ayah_search_show_translation">Show translation</string>
+  <string name="ayah_search_show_similarity">Show match percentage</string>
+  <string name="ayah_search_similarity">%1$d%%</string>
+  <string name="ayah_search_similarity_description">%1$d%% match</string>
   <plurals name="ayah_search_result_count">
     <item quantity="one">%1$d matching ayah</item>
     <item quantity="other">%1$d matching ayahs</item>
@@ -270,6 +273,8 @@
   <string name="prefs_ayah_before_translation_summary">Show ayah in Arabic above the translation</string>
   <string name="prefs_ayah_search_show_translation_title">Translation in ayah search</string>
   <string name="prefs_ayah_search_show_translation_summary">Show your selected translation under matching ayahs</string>
+  <string name="prefs_ayah_search_show_similarity_title">Match percentage in ayah search</string>
+  <string name="prefs_ayah_search_show_similarity_summary">Show how closely each phonetic search result matches your query</string>
   <string name="prefs_use_dyslexic_font_title">Dyslexia friendly font</string>
   <string name="prefs_use_dyslexic_font_summary">Display translations in dyslexia friendly font</string>
   <string name="prefs_category_download">Download Options</string>
